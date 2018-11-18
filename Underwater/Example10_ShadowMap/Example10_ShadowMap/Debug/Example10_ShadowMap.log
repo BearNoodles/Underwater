@@ -1,0 +1,6 @@
+﻿  App1.cpp
+e:\3year\shaders\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(44): warning C4316: 'Light': object allocated on the heap may not be aligned 16
+e:\3year\shaders\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+e:\3year\shaders\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+e:\3year\shaders\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(293): warning C4305: 'argument': truncation from 'double' to 'float'
+  Example10_ShadowMap.vcxproj -> E:\3year\Shaders\Underwater\Example10_ShadowMap\Debug\Example10_ShadowMap.exe
