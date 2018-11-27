@@ -44,7 +44,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	dLights = new Light[DIRCOUNT]();
 
 	dLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[0].setDiffuseColour(1.0f, 0.0f, 0.0f, 1.0f);
+	dLights[0].setDiffuseColour(1.0f, 1.0f, 0.0f, 1.0f);
 	dLights[0].setDirection(1.0f, -1.0f, 0.0f);
 	dLights[0].setPosition(-20.0f, 20.0f, 0.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
@@ -175,13 +175,13 @@ void App1::depthPass3()
 {
 	// Set the render target to be the render to texture.
 	playerDepthMap->setRenderTarget(renderer->getDeviceContext());
-	playerDepthMap->clearRenderTarget(renderer->getDeviceContext(), 1.0f, 1.0f, 1.0f, 1.0f);
+	playerDepthMap->clearRenderTarget(renderer->getDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// get the world, view, and projection matrices from the camera and d3d objects.
 	camera->update();
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	XMMATRIX viewMatrix = camera->getViewMatrix();
-	XMMATRIX projectionMatrix = camera->getOrthoViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
 	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
 	// Render floor

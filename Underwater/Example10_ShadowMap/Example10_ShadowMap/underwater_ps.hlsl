@@ -30,7 +30,7 @@ float4 main(InputType input) : SV_TARGET
 	//float texelWidth = 100.0f / screenWidth;
 	//float texelHeight = 1.0f / screenHeight;
 
-	colour = texture0.Sample(sampler0, input.tex + float2((sin(0.1f * input.position.y + (time * 5))) *  0.001f, 0.0f));// (sin(0.05f * input.position.x + (time * 10))) *  0.001f));
+	colour = texture0.Sample(sampler0, input.tex + float2((cos(0.1f * input.position.y + (time * 5))) *  0.001f, 0.0f));// (sin(0.05f * input.position.x + (time * 10))) *  0.001f));
 	//colour = texture0.Sample(sampler0, input.tex + float2(sin(input.position.y) * texelWidth / 50, 0.0f));
 
 	return colour;
