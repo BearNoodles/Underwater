@@ -1,4 +1,3 @@
-
 #define DIRCOUNT 2
 
 cbuffer MatrixBuffer : register(b0)

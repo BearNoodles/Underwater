@@ -18,11 +18,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
+	textureMgr->loadTexture("height", L"res/height.png");
 
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	shadowShader = new ShadowShader(renderer->getDevice(), hwnd);
 	waterShader = new UnderwaterShader(renderer->getDevice(), hwnd);
+	heightShader = new HeightShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
 	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, 0, 0);
@@ -217,6 +219,11 @@ void App1::finalPass()
 	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
 	// Render floor
 	mesh->sendData(renderer->getDeviceContext());
+
+	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture("height"));
+	heightShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+
 	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, 
 		textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
 	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
@@ -224,7 +231,8 @@ void App1::finalPass()
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
 
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
 	shadowShader->render(renderer->getDeviceContext(), model->getIndexCount());
 	
 	renderer->setBackBufferRenderTarget();

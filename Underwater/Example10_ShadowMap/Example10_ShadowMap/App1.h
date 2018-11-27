@@ -9,6 +9,7 @@
 #include "DepthShader.h"
 #include "UnderwaterShader.h"
 #include "FogShader.h"
+#include "heightShader.h"
 
 #define DIRCOUNT 2
 
@@ -43,6 +44,8 @@ private:
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
 	UnderwaterShader* waterShader;
+	HeightShader* heightShader;
+
 
 	RenderTexture* shadowMap;
 	RenderTexture* shadowMap2;
