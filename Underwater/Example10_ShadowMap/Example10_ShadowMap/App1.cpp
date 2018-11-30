@@ -15,24 +15,29 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh object and shader object
-	mesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
+	terrainPlane = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
+	surfacePlane = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
-	textureMgr->loadTexture("height", L"res/height.png");
+	textureMgr->loadTexture("height", L"res/terrain.png");
+	textureMgr->loadTexture("normal", L"res/normalMap.png");
+	textureMgr->loadTexture("water", L"res/water.png");
 
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	shadowShader = new ShadowShader(renderer->getDevice(), hwnd);
 	waterShader = new UnderwaterShader(renderer->getDevice(), hwnd);
 	heightShader = new HeightShader(renderer->getDevice(), hwnd);
+	depthHeightShader = new DepthHeightShader(renderer->getDevice(), hwnd);
+	surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
 	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, 0, 0);
 
 	int shadowmapWidth = 2048;
 	int shadowmapHeight = 2048;
-	int sceneWidth = 100;
-	int sceneHeight = 100;
+	int sceneWidth = 200;
+	int sceneHeight = 200;
 
 	modelRot = 0;
 
@@ -46,16 +51,24 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	dLights = new Light[DIRCOUNT]();
 
 	dLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[0].setDiffuseColour(1.0f, 1.0f, 0.0f, 1.0f);
+	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	dLights[0].setDirection(1.0f, -1.0f, 0.0f);
-	dLights[0].setPosition(-20.0f, 20.0f, 0.0f);
+	dLights[0].setPosition(-20.0f, 40.0f, 0.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[1].setDiffuseColour(0.0f, 0.0f, 1.0f, 1.0f);
-	dLights[1].setDirection(-1.0f, -1.0f, 0.0f);
-	dLights[1].setPosition(20.0f, 20.0f, 0.0f);
+	dLights[1].setDiffuseColour(1.0f, 0.0f, 0.0f, 1.0f);// shadows on hills?
+	dLights[1].setDirection(1.0f, 1.0f, 0.0f);
+	dLights[1].setPosition(0.0f, 10.0f, 0.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
+
+	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
+
+	wave = new float[4];
+	wave[0] = 0; //Time
+	wave[1] = 2.0f; //Frequency
+	wave[2] = 0.3f; //Height
+	wave[3] = 0.5f; //Speed
 
 	fog = new float[2];
 	fog[0] = 0;
@@ -99,6 +112,10 @@ bool App1::frame()
 bool App1::render()
 {
 
+	currentTime += timer->getTime();
+	wave[0] = currentTime;
+	dLights[0].setDirection(lightDir[0], lightDir[1], lightDir[2]);
+
 	// Perform depth pass
 	depthPass1();
 	depthPass2();
@@ -123,11 +140,17 @@ void App1::depthPass1()
 
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	worldMatrix = positionFloor();
 	// Render floor
-	mesh->sendData(renderer->getDeviceContext());
+	terrainPlane->sendData(renderer->getDeviceContext());
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("height"));
+	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
+
+	worldMatrix = positionSurface();
+	// Render floor
+	surfacePlane->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0);
-	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+	depthShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -153,12 +176,19 @@ void App1::depthPass2()
 	XMMATRIX lightProjectionMatrix1 = dLights[1].getOrthoMatrix();
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	worldMatrix = positionFloor();
 	// Render floor
-	mesh->sendData(renderer->getDeviceContext());
+	terrainPlane->sendData(renderer->getDeviceContext());
 
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("height"));
+	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
+
+	worldMatrix = positionSurface();
+	// Render floor
+	surfacePlane->sendData(renderer->getDeviceContext());
+	
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1);
-	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+	depthShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -185,12 +215,19 @@ void App1::depthPass3()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	worldMatrix = positionFloor();
 	// Render floor
-	mesh->sendData(renderer->getDeviceContext());
+	terrainPlane->sendData(renderer->getDeviceContext());
 
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("height"));
+	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
+
+	worldMatrix = positionSurface();
+	// Render floor
+	surfacePlane->sendData(renderer->getDeviceContext());
+	
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+	depthShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -216,17 +253,21 @@ void App1::finalPass()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	worldMatrix = positionFloor();
 	// Render floor
-	mesh->sendData(renderer->getDeviceContext());
+	terrainPlane->sendData(renderer->getDeviceContext());
 
 	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture("height"));
-	heightShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+		textureMgr->getTexture("brick"), textureMgr->getTexture("height"), textureMgr->getTexture("normal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
+	heightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, 
-		textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
-	shadowShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+	worldMatrix = positionSurface();
+	// Render floor
+	terrainPlane->sendData(renderer->getDeviceContext());
+
+	surfaceShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture("water"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, wave);
+	surfaceShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -243,8 +284,6 @@ void App1::finalPass2()
 
 	// Clear the scene. (default blue colour)
 	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
-
-	currentTime += timer->getTime();
 
 
 	// RENDER THE RENDER TEXTURE SCENE
@@ -269,6 +308,32 @@ void App1::finalPass2()
 
 	// Present the rendered scene to the screen.
 	renderer->endScene();
+}
+
+XMMATRIX App1::positionFloor()
+{
+	// Render model
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixTranslation(-50.f, -30.f, -20.0f);
+	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
+	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
+	//worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
+
+	return worldMatrix;
+}
+
+XMMATRIX App1::positionSurface()
+{
+	// Render model
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
+	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
+	//worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
+
+	return worldMatrix;
 }
 
 XMMATRIX App1::positionModel()
@@ -298,7 +363,15 @@ void App1::gui()
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
+
+	ImGui::SliderFloat("LightPosX", &lightDir[0], 0.1f, 1);
+	ImGui::SliderFloat("LightPosY", &lightDir[1], -1, 1);
+	ImGui::SliderFloat("LightPosZ", &lightDir[2], -1, 1);
+
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
+	ImGui::SliderFloat("Wave Frequency", &wave[1], 0, 10);
+	ImGui::SliderFloat("Wave Height", &wave[2], 0, 10);
+	ImGui::SliderFloat("Wave Speed", &wave[3], 0, 10);
 
 	// Render UI
 	ImGui::Render();

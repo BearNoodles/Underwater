@@ -105,7 +105,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 }
 
 
-void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights)
+void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
@@ -133,9 +133,35 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	//Additional
+	// Send light data to pixel shader
+	deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	dLightPtr = (LightBufferType*)mappedResource.pData;
+
+	//1st Directional light
+	dLightPtr->ambient[0] = dLights[0].getAmbientColour();
+	dLightPtr->diffuse[0] = dLights[0].getDiffuseColour();
+	dLightPtr->direction[0] = { dLights[0].getDirection().x, dLights[0].getDirection().y, dLights[0].getDirection().z, 0 };
+
+	//2nd directional light
+	dLightPtr->ambient[1] = dLights[1].getAmbientColour();
+	dLightPtr->diffuse[1] = dLights[1].getDiffuseColour();
+	dLightPtr->direction[1] = { dLights[1].getDirection().x, dLights[1].getDirection().y, dLights[1].getDirection().z, 0 };
+	//dlightPtr->padding[1] = 0;
+	deviceContext->Unmap(lightBuffer, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
 
 	// Set shader texture resource in the pixel shader.
-	deviceContext->VSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(1, 1, &depthMap);
+	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
+	deviceContext->PSSetSamplers(0, 1, &sampleState);
+	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow1);
+	deviceContext->PSSetSamplers(2, 1, &sampleStateShadow2);
+
+	// Set shader texture resource in the pixel shader.
+	deviceContext->VSSetShaderResources(0, 1, &heightTexture);
+	deviceContext->VSSetShaderResources(1, 1, &normalTexture);
 	deviceContext->VSSetSamplers(0, 1, &sampleState);
 }
 

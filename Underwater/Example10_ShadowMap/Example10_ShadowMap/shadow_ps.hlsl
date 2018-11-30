@@ -1,4 +1,3 @@
-
 Texture2D shaderTexture : register(t0);
 Texture2D depthMapTexture1 : register(t1);
 Texture2D depthMapTexture2 : register(t2);

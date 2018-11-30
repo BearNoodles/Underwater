@@ -8,6 +8,10 @@ float4 main(InputType input) : SV_TARGET
 {
 	float depthValue;
 	// Get the depth value of the pixel by dividing the Z pixel depth by the homogeneous W coordinate.
+	if (input.depthPosition.w == 0)
+	{
+		input.depthPosition.w = 0.01f;
+	}
 	depthValue = input.depthPosition.z / input.depthPosition.w;
     return float4(depthValue, depthValue, depthValue, 1.0f);
 

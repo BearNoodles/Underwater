@@ -1,5 +1,4 @@
-// Light shader.h
-// Basic single light shader setup
+
 #ifndef _HEIGHTSHADER_H_
 #define _HEIGHTSHADER_H_
 #define DIRCOUNT 2
@@ -18,6 +17,8 @@ private:
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
+		XMMATRIX lightView[DIRCOUNT];
+		XMMATRIX lightProjection[DIRCOUNT];
 	};
 
 	struct LightBufferType
@@ -33,7 +34,7 @@ public:
 	HeightShader(ID3D11Device* device, HWND hwnd);
 	~HeightShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights);
 
 private:
 	void initShader(WCHAR*, WCHAR*);

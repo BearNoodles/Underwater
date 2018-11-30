@@ -10,7 +10,6 @@ using namespace DirectX;
 
 class DepthShader : public BaseShader
 {
-
 public:
 
 	DepthShader(ID3D11Device* device, HWND hwnd);

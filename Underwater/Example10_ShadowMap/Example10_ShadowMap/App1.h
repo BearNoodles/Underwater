@@ -10,6 +10,8 @@
 #include "UnderwaterShader.h"
 #include "FogShader.h"
 #include "heightShader.h"
+#include "depthheightshader.h"
+#include "surfaceShader.h"
 
 #define DIRCOUNT 2
 
@@ -25,26 +27,32 @@ public:
 
 protected:
 	bool render();
+	XMMATRIX positionFloor();
+	XMMATRIX positionSurface();
 	XMMATRIX positionModel();
 	void depthPass1();
 	void depthPass2();
 	void depthPass3();
 	void finalPass();
 	void finalPass2();
-	void firstPass2();
 	void gui();
 
 private:
 	TextureShader* textureShader;
-	PlaneMesh* mesh;
+	PlaneMesh* terrainPlane;
+	PlaneMesh* surfacePlane;
 	Model* model;
 	float modelRot;
 
-	Light *dLights;
+	Light* dLights;
+	float* lightDir;
+
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
 	UnderwaterShader* waterShader;
 	HeightShader* heightShader;
+	DepthHeightShader* depthHeightShader;
+	SurfaceShader* surfaceShader;
 
 
 	RenderTexture* shadowMap;
@@ -55,6 +63,9 @@ private:
 	OrthoMesh* ortho2;
 
 	float currentTime;
+
+	float* wave;
+
 	float* fog;
 
 	int screenW;

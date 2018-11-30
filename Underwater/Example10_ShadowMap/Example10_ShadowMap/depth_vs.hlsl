@@ -1,3 +1,4 @@
+
 cbuffer MatrixBuffer : register(b0)
 {
     matrix worldMatrix;
@@ -21,7 +22,6 @@ struct OutputType
 OutputType main(InputType input)
 {
     OutputType output;
-
     // Calculate the position of the vertex against the world, view, and projection matrices.
     output.position = mul(input.position, worldMatrix);
     output.position = mul(output.position, viewMatrix);
