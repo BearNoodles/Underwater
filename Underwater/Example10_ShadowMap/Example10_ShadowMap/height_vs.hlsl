@@ -75,6 +75,7 @@ OutputType main(InputType input)
 
 	//Calculate normals from height map colour
 	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK
+	//ALSO TODO, MOVE THE NORMALS WITH THE MOVING TEXTURE
 	output.normal.x = -lerp(-1, 1, normalColour.x);
 	output.normal.y = lerp(-1, 1, normalColour.z);
 	output.normal.z = lerp(0, -1, normalColour.y);
