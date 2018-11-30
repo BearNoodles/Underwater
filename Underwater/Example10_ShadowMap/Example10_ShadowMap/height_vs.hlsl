@@ -12,6 +12,13 @@ cbuffer MatrixBuffer : register(b0)
 	matrix lightViewMatrix[DIRCOUNT];
 	matrix lightProjectionMatrix[DIRCOUNT];
 };
+cbuffer WaveBuffer : register(b1)
+{
+	float time;
+	float speed;
+	float height;
+	float padding;
+};
 
 struct InputType
 {
@@ -34,10 +41,19 @@ OutputType main(InputType input)
 {
     OutputType output;
 
-	float4 textureColour;
-	textureColour = texture1.SampleLevel(sampler1, input.tex, 0);
+	float2 movingTex;
+	movingTex.x = input.tex.x + (time * speed / 100);
+	movingTex.y = input.tex.y;
 
-	input.position.y += textureColour.r * 40;
+	//input.tex.x = input.tex.x + (time * speed / 100);
+	//input.tex.y = input.tex.y;
+	//output.tex = input.tex;
+
+	float4 textureColour;
+	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);
+
+	input.position.y += textureColour.r * height;
+	output.tex = input.tex;
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.
     output.position = mul(input.position, worldMatrix);
@@ -53,11 +69,12 @@ OutputType main(InputType input)
 	output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix[1]);
 	output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
 
-    output.tex = input.tex;
 
 	float4 normalColour;
 	normalColour = texture2.SampleLevel(sampler1, input.tex, 0);
 
+	//Calculate normals from height map colour
+	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK
 	output.normal.x = -lerp(-1, 1, normalColour.x);
 	output.normal.y = lerp(-1, 1, normalColour.z);
 	output.normal.z = lerp(0, -1, normalColour.y);

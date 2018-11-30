@@ -29,12 +29,20 @@ private:
 		//float padding;
 	};
 
+	struct HeightBufferType
+	{
+		float time;
+		float speed;
+		float height;
+		float padding;
+	};
+
 public:
 
 	HeightShader(ID3D11Device* device, HWND hwnd);
 	~HeightShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights, float* wave);
 
 private:
 	void initShader(WCHAR*, WCHAR*);
@@ -45,6 +53,7 @@ private:
 	ID3D11SamplerState* sampleStateShadow1;
 	ID3D11SamplerState* sampleStateShadow2;
 	ID3D11Buffer* lightBuffer;
+	ID3D11Buffer* heightBuffer;
 };
 
 #endif

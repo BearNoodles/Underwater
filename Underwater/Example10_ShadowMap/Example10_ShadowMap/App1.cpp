@@ -19,8 +19,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	surfacePlane = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
-	textureMgr->loadTexture("height", L"res/terrain.png");
-	textureMgr->loadTexture("normal", L"res/normalMap.png");
+	textureMgr->loadTexture("terrainHeight", L"res/terrainHeight.png");
+	textureMgr->loadTexture("waveHeight", L"res/waveHeight.png");
+	textureMgr->loadTexture("terrainNormal", L"res/terrainNormal.png");
+	textureMgr->loadTexture("waveNormal", L"res/waveNormal.png");
 	textureMgr->loadTexture("water", L"res/water.png");
 
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
@@ -64,11 +66,16 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
 
-	wave = new float[4];
+	wave = new float[2];
 	wave[0] = 0; //Time
-	wave[1] = 2.0f; //Frequency
-	wave[2] = 0.3f; //Height
-	wave[3] = 0.5f; //Speed
+	wave[1] = 5.0f; //Speed
+	wave[2] = 5.0f; //Height
+	//wave[3] = 0.5f; //Speed
+
+	noWave = new float[3];
+	noWave[0] = 0;
+	noWave[1] = 0;
+	noWave[2] = 40;
 
 	fog = new float[2];
 	fog[0] = 0;
@@ -143,7 +150,7 @@ void App1::depthPass1()
 	worldMatrix = positionFloor();
 	// Render floor
 	terrainPlane->sendData(renderer->getDeviceContext());
-	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("height"));
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("terrainHeight"));
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
@@ -180,7 +187,7 @@ void App1::depthPass2()
 	// Render floor
 	terrainPlane->sendData(renderer->getDeviceContext());
 
-	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("height"));
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("terrainHeight"));
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
@@ -219,7 +226,7 @@ void App1::depthPass3()
 	// Render floor
 	terrainPlane->sendData(renderer->getDeviceContext());
 
-	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("height"));
+	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("terrainHeight"));
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
@@ -258,16 +265,16 @@ void App1::finalPass()
 	terrainPlane->sendData(renderer->getDeviceContext());
 
 	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture("brick"), textureMgr->getTexture("height"), textureMgr->getTexture("normal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
+		textureMgr->getTexture("brick"), textureMgr->getTexture("terrainHeight"), textureMgr->getTexture("terrainNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, noWave);
 	heightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
-	// Render floor
-	terrainPlane->sendData(renderer->getDeviceContext());
+	// Render surface
+	surfacePlane->sendData(renderer->getDeviceContext());
 
-	surfaceShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture("water"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, wave);
-	surfaceShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
+	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
+		textureMgr->getTexture("water"), textureMgr->getTexture("waveHeight"), textureMgr->getTexture("waveNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, wave);
+	heightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -369,9 +376,9 @@ void App1::gui()
 	ImGui::SliderFloat("LightPosZ", &lightDir[2], -1, 1);
 
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
-	ImGui::SliderFloat("Wave Frequency", &wave[1], 0, 10);
+	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
 	ImGui::SliderFloat("Wave Height", &wave[2], 0, 10);
-	ImGui::SliderFloat("Wave Speed", &wave[3], 0, 10);
+	//ImGui::SliderFloat("Wave Speed", &wave[3], 0, 10);
 
 	// Render UI
 	ImGui::Render();

@@ -65,6 +65,7 @@ private:
 	float currentTime;
 
 	float* wave;
+	float* noWave;
 
 	float* fog;
 

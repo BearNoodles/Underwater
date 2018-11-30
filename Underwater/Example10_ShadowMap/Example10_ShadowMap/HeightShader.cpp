@@ -30,6 +30,11 @@ HeightShader::~HeightShader()
 		lightBuffer->Release();
 		lightBuffer = 0;
 	}
+	if (heightBuffer)
+	{
+		lightBuffer->Release();
+		lightBuffer = 0;
+	}
 
 	//Release base shader components
 	BaseShader::~BaseShader();
@@ -41,6 +46,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
+	D3D11_BUFFER_DESC heightBufferDesc;
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
@@ -102,14 +108,24 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	lightBufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&lightBufferDesc, NULL, &lightBuffer);
 
+	// Setup wave buffer
+	heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
+	heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	heightBufferDesc.MiscFlags = 0;
+	heightBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
+
 }
 
 
-void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights)
+void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights, float* wave)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	LightBufferType* dLightPtr;
+	HeightBufferType* heightPtr;
 
 	// Transpose the matrices to prepare them for the shader.
 	XMMATRIX tworld = XMMatrixTranspose(world);
@@ -150,6 +166,17 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	//dlightPtr->padding[1] = 0;
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+
+	deviceContext->Map(heightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	heightPtr = (HeightBufferType*)mappedResource.pData;
+
+	heightPtr->time = wave[0];
+	heightPtr->speed = wave[1];
+	heightPtr->height = wave[2];
+	heightPtr->padding = 0.0f;
+	deviceContext->Unmap(heightBuffer, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, &heightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
