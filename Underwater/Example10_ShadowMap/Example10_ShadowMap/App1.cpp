@@ -15,9 +15,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh object and shader object
-	terrainPlane = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
-	surfacePlane = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
+	terrainPlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext());
+	surfacePlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
+
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
 	textureMgr->loadTexture("terrainHeight", L"res/terrainHeight.png");
 	textureMgr->loadTexture("waveHeight", L"res/waveHeight.png");
@@ -34,7 +35,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
-	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, 0, 0);
+	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, -screenWidth/2.7f, screenHeight/2.7f);
 
 	int shadowmapWidth = 2048;
 	int shadowmapHeight = 2048;
@@ -66,6 +67,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
 
+	terrainTess = 1;
+	waterTess = 1;
+
 	wave = new float[2];
 	wave[0] = 0; //Time
 	wave[1] = 5.0f; //Speed
@@ -75,7 +79,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	noWave = new float[3];
 	noWave[0] = 0;
 	noWave[1] = 0;
-	noWave[2] = 40;
+	noWave[2] = 15;
 
 	fog = new float[2];
 	fog[0] = 0;
@@ -154,7 +158,7 @@ void App1::depthPass1()
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
-	// Render floor
+	
 	surfacePlane->sendData(renderer->getDeviceContext());
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0);
 	depthShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
@@ -191,7 +195,7 @@ void App1::depthPass2()
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
-	// Render floor
+
 	surfacePlane->sendData(renderer->getDeviceContext());
 	
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1);
@@ -230,7 +234,7 @@ void App1::depthPass3()
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
 	worldMatrix = positionSurface();
-	// Render floor
+
 	surfacePlane->sendData(renderer->getDeviceContext());
 	
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
@@ -263,22 +267,22 @@ void App1::finalPass()
 	worldMatrix = positionFloor();
 	// Render floor
 	terrainPlane->sendData(renderer->getDeviceContext());
-
+	
 	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture("brick"), textureMgr->getTexture("terrainHeight"), textureMgr->getTexture("terrainNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, noWave);
+		textureMgr->getTexture("brick"), textureMgr->getTexture("terrainHeight"), textureMgr->getTexture("terrainNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, noWave, terrainTess);
 	heightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
-
+	
 	worldMatrix = positionSurface();
 	// Render surface
 	surfacePlane->sendData(renderer->getDeviceContext());
-
+	
 	heightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
-		textureMgr->getTexture("water"), textureMgr->getTexture("waveHeight"), textureMgr->getTexture("waveNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, wave);
+		textureMgr->getTexture("water"), textureMgr->getTexture("waveHeight"), textureMgr->getTexture("waveNormal"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights, wave, waterTess);
 	heightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
-
+	
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
-
+	
 	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
 		textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
 	shadowShader->render(renderer->getDeviceContext(), model->getIndexCount());
@@ -301,12 +305,16 @@ void App1::finalPass2()
 	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
 
 	ortho->sendData(renderer->getDeviceContext());
-	waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
-	waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	//waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
+	//waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	
+	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView());
+	textureShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+
 
 	ortho2->sendData(renderer->getDeviceContext());
 	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
-	textureShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
 
 	renderer->setZBuffer(true);
 
@@ -321,7 +329,7 @@ XMMATRIX App1::positionFloor()
 {
 	// Render model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(-50.f, -30.f, -20.0f);
+	worldMatrix = XMMatrixTranslation(-25.f, -10.f, -20.0f);
 	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -334,7 +342,7 @@ XMMATRIX App1::positionSurface()
 {
 	// Render model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(-50.f, 0.f, -20.0f);
+	worldMatrix = XMMatrixTranslation(-50.f, -10.0f, -20.0f);
 	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -370,7 +378,9 @@ void App1::gui()
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
-
+	ImGui::SliderFloat("TesselationW", &waterTess, 1.0f, 32.0f);
+	ImGui::SliderFloat("TesselationT", &terrainTess, 1.0f, 32.0f);
+	
 	ImGui::SliderFloat("LightPosX", &lightDir[0], 0.1f, 1);
 	ImGui::SliderFloat("LightPosY", &lightDir[1], -1, 1);
 	ImGui::SliderFloat("LightPosZ", &lightDir[2], -1, 1);

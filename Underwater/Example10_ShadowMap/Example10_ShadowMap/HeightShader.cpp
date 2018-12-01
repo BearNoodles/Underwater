@@ -4,7 +4,7 @@
 
 HeightShader::HeightShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"height_vs.cso", L"height_ps.cso");
+	initShader(L"height_vs.cso", L"height_hs.cso", L"height_ds.cso", L"height_ps.cso");
 }
 
 
@@ -30,10 +30,15 @@ HeightShader::~HeightShader()
 		lightBuffer->Release();
 		lightBuffer = 0;
 	}
+	if (tessBuffer)
+	{
+		tessBuffer->Release();
+		tessBuffer = 0;
+	}
 	if (heightBuffer)
 	{
-		lightBuffer->Release();
-		lightBuffer = 0;
+		heightBuffer->Release();
+		heightBuffer = 0;
 	}
 
 	//Release base shader components
@@ -45,6 +50,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
+	D3D11_BUFFER_DESC tessBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC heightBufferDesc;
 
@@ -99,6 +105,14 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[3] = 1.0f;
 	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow2);
 
+	tessBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	tessBufferDesc.ByteWidth = sizeof(TessellationBufferType);
+	tessBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	tessBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	tessBufferDesc.MiscFlags = 0;
+	tessBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&tessBufferDesc, NULL, &tessBuffer);
+
 	// Setup light buffer
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
@@ -119,11 +133,20 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 
 }
 
+void HeightShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename)
+{
+	initShader(vsFilename, psFilename);
 
-void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights, float* wave)
+	loadHullShader(hsFilename);
+	loadDomainShader(dsFilename);
+}
+
+
+void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights, float* wave, float tess)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
+	TessellationBufferType* tessPtr;
 	LightBufferType* dLightPtr;
 	HeightBufferType* heightPtr;
 
@@ -147,7 +170,16 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dataPtr->lightView[1] = tLightViewMatrix1;
 	dataPtr->lightProjection[1] = tLightProjectionMatrix1;
 	deviceContext->Unmap(matrixBuffer, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+	deviceContext->DSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	deviceContext->Map(tessBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	tessPtr = (TessellationBufferType*)mappedResource.pData;
+
+	tessPtr->tessellationFactorE = tess;
+	tessPtr->tessellationFactorI = tess;
+	tessPtr->padding = { 0.0f,0.0f };
+	deviceContext->Unmap(tessBuffer, 0);
+	deviceContext->HSSetConstantBuffers(0, 1, &tessBuffer);
 
 	//Additional
 	// Send light data to pixel shader
@@ -176,7 +208,7 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	heightPtr->height = wave[2];
 	heightPtr->padding = 0.0f;
 	deviceContext->Unmap(heightBuffer, 0);
-	deviceContext->VSSetConstantBuffers(1, 1, &heightBuffer);
+	deviceContext->DSSetConstantBuffers(1, 1, &heightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
@@ -187,8 +219,8 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetSamplers(2, 1, &sampleStateShadow2);
 
 	// Set shader texture resource in the pixel shader.
-	deviceContext->VSSetShaderResources(0, 1, &heightTexture);
-	deviceContext->VSSetShaderResources(1, 1, &normalTexture);
-	deviceContext->VSSetSamplers(0, 1, &sampleState);
+	deviceContext->DSSetShaderResources(0, 1, &heightTexture);
+	deviceContext->DSSetShaderResources(1, 1, &normalTexture);
+	deviceContext->DSSetSamplers(0, 1, &sampleState);
 }
 

@@ -26,10 +26,13 @@ OutputType main(InputType input)
 {
 	OutputType output;
 
+	//TODO pass this height in through a buffer
+	int height = 40;
+
 	float4 textureColour;
 	textureColour = texture1.SampleLevel(sampler1, input.tex, 0);
 
-	input.position.y += textureColour.r * 40;
+	input.position.y += textureColour.r * height;
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.
 	output.position = mul(input.position, worldMatrix);

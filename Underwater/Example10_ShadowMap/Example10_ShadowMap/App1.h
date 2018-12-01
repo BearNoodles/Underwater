@@ -12,6 +12,7 @@
 #include "heightShader.h"
 #include "depthheightshader.h"
 #include "surfaceShader.h"
+#include "TessellatedQuad.h"
 
 #define DIRCOUNT 2
 
@@ -39,8 +40,9 @@ protected:
 
 private:
 	TextureShader* textureShader;
-	PlaneMesh* terrainPlane;
-	PlaneMesh* surfacePlane;
+	TessellatedQuad* terrainPlane;
+	//PlaneMesh* surfacePlane;
+	TessellatedQuad* surfacePlane;
 	Model* model;
 	float modelRot;
 
@@ -61,6 +63,9 @@ private:
 	RenderTexture* waterTexture;
 	OrthoMesh* ortho;
 	OrthoMesh* ortho2;
+
+	float terrainTess;
+	float waterTess;
 
 	float currentTime;
 
