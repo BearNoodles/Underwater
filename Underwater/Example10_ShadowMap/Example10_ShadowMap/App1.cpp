@@ -255,8 +255,11 @@ void App1::depthPass3()
 void App1::finalPass()
 {
 	// Set the render target to be the render to texture and clear it
-	waterTexture->setRenderTarget(renderer->getDeviceContext());
-	waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.39f, 0.58f, 0.92f, 1.0f);
+	//waterTexture->setRenderTarget(renderer->getDeviceContext());
+	//waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.39f, 0.58f, 0.92f, 1.0f);
+
+	renderer->setBackBufferRenderTarget();
+	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 
 	camera->update();
 	// get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
@@ -294,29 +297,29 @@ void App1::finalPass2()
 {
 
 	// Clear the scene. (default blue colour)
-	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
-
-
-	// RENDER THE RENDER TEXTURE SCENE
-	// Requires 2D rendering and an ortho mesh.
-	renderer->setZBuffer(false);
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
-
-	ortho->sendData(renderer->getDeviceContext());
-	//waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
-	//waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-	
-	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView());
-	textureShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-
-
-	ortho2->sendData(renderer->getDeviceContext());
-	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
-	textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
-
-	renderer->setZBuffer(true);
+	//renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	//
+	//
+	//// RENDER THE RENDER TEXTURE SCENE
+	//// Requires 2D rendering and an ortho mesh.
+	//renderer->setZBuffer(false);
+	//XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	//XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
+	//XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+	//
+	//ortho->sendData(renderer->getDeviceContext());
+	////waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
+	////waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	//
+	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView());
+	//textureShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	//
+	//
+	//ortho2->sendData(renderer->getDeviceContext());
+	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
+	//textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
+	//
+	//renderer->setZBuffer(true);
 
 	// Render GUI
 	gui();

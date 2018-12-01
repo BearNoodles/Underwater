@@ -6,10 +6,4 @@ M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\heig
   
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.cso
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_vs.cso
-  App1.cpp
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(38): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(54): warning C4316: 'Light': object allocated on the heap may not be aligned 16
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(66): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(388): warning C4305: 'argument': truncation from 'double' to 'float'
   Example10_ShadowMap.vcxproj -> M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Debug\Example10_ShadowMap.exe

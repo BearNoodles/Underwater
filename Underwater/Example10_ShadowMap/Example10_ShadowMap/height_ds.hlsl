@@ -64,8 +64,8 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 
 	float2 movingTex;
-	movingTex.x = texPos.x +(time * speed / 100);
-	movingTex.y = texPos.y;
+	movingTex.x = texPos.x + (time * speed / 100);
+	movingTex.y = texPos.y;// +(time * speed / 100);
 
 	float4 textureColour;
 	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);
@@ -73,6 +73,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	vertexPosition.y += textureColour.r * height;
 	//vertexPosition.y +=  20;
 
+	//output.tex = texPos;
 	output.tex = texPos;
 
 
@@ -92,14 +93,14 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
 
 	float4 normalColour;
-	normalColour = texture2.SampleLevel(sampler1, texPos, 0);
+	normalColour = texture2.SampleLevel(sampler1, movingTex, 0);
 
 	//Calculate normals from height map colour
 	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK
 	//ALSO TODO, MOVE THE NORMALS WITH THE MOVING TEXTURE
 	output.normal.x = -lerp(-1.0f, 1.0f, normalColour.x);
 	output.normal.y = lerp(-1.0f, 1.0f, normalColour.z);
-	output.normal.z = -lerp(-1.0f, 1.0f, normalColour.y);
+	output.normal.z = lerp(-1.0f, 1.0f, normalColour.y);
 
 	output.normal = mul(output.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
