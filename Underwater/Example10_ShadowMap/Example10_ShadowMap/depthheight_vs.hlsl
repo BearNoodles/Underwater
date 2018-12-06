@@ -1,46 +1,28 @@
 
-Texture2D texture1 : register(t0);
-SamplerState sampler1 : register(s0);
-
-cbuffer MatrixBuffer : register(b0)
-{
-	matrix worldMatrix;
-	matrix viewMatrix;
-	matrix projectionMatrix;
-};
 
 struct InputType
 {
 	float4 position : POSITION;
 	float2 tex : TEXCOORD0;
-	float3 normal : NORMAL;
 };
 
 struct OutputType
 {
 	float4 position : SV_POSITION;
-	float4 depthPosition : TEXCOORD0;
+	float2 tex : TEXCOORD0;
+	float3 normal : NORMAL;
 };
 
 OutputType main(InputType input)
 {
 	OutputType output;
 
-	//TODO pass this height in through a buffer
-	int height = 40;
+	output.position = input.position;
 
-	float4 textureColour;
-	textureColour = texture1.SampleLevel(sampler1, input.tex, 0);
+	// Pass the input color into the hull shader.
+	//output.colour = float4(1.0, 1.0, 1.0, 1.0);
 
-	input.position.y += textureColour.r * height;
-
-	// Calculate the position of the vertex against the world, view, and projection matrices.
-	output.position = mul(input.position, worldMatrix);
-	output.position = mul(output.position, viewMatrix);
-	output.position = mul(output.position, projectionMatrix);
-
-	// Store the position value in a second input value for depth value calculations.
-	output.depthPosition = output.position;
+	output.tex = input.tex;
 
 	return output;
 }

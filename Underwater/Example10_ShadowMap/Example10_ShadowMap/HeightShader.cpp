@@ -8,6 +8,16 @@ HeightShader::HeightShader(ID3D11Device* device, HWND hwnd) : BaseShader(device,
 }
 
 
+
+void HeightShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename)
+{
+	initShader(vsFilename, psFilename);
+
+	loadHullShader(hsFilename);
+	loadDomainShader(dsFilename);
+}
+
+
 HeightShader::~HeightShader()
 {
 	if (sampleState)
@@ -131,14 +141,6 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	heightBufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
 
-}
-
-void HeightShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename)
-{
-	initShader(vsFilename, psFilename);
-
-	loadHullShader(hsFilename);
-	loadDomainShader(dsFilename);
 }
 
 

@@ -9,16 +9,36 @@ using namespace DirectX;
 
 class DepthHeightShader : public BaseShader
 {
+private:
+
+	struct TessellationBufferType
+	{
+		float tessellationFactorE;
+		float tessellationFactorI;
+		XMFLOAT2 padding;
+	};
+
+	struct HeightBufferType
+	{
+		float time;
+		float speed;
+		float height;
+		float padding;
+	};
+
 public:
 
 	DepthHeightShader(ID3D11Device* device, HWND hwnd);
 	~DepthHeightShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* heightTexture);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* heightTexture, float* wave, float tess);
 
 private:
-	void initShader(WCHAR*, WCHAR*);
+	void initShader(WCHAR* vsFilename, WCHAR* psFilename);
+	void initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename);
 
 private:
 	ID3D11Buffer * matrixBuffer;
+	ID3D11Buffer* tessBuffer;
+	ID3D11Buffer * heightBuffer;
 };

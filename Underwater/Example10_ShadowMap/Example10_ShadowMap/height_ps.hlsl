@@ -38,32 +38,24 @@ float4 main(InputType input) : SV_TARGET
 	float depthValue2;
 	float lightDepthValue1;
 	float lightDepthValue2;
-	float shadowMapBias = 0.006f;
-	float4 colour1 = float4(0.f, 0.f, 0.f, 1.f);
-	float4 colour2 = float4(0.f, 0.f, 0.f, 1.f);
+	float shadowMapBias = 0.007f;
+	float4 colour1 = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	float4 colour2 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour;
 	float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
 
-	if (input.lightViewPos1.w == 0)
-	{
-		input.lightViewPos1.w = 0.01f;
-	}
-	if (input.lightViewPos2.w == 0)
-	{
-		input.lightViewPos2.w = 0.01f;
-	}
 	
 	// Calculate the projected texture coordinates.
 	float2 pTexCoord1 = input.lightViewPos1.xy / input.lightViewPos1.w;
-	pTexCoord1 *= float2(0.5, -0.5);
+	pTexCoord1 *= float2(0.5f, -0.5f);
 	pTexCoord1 += float2(0.5f, 0.5f);
 	
 	float2 pTexCoord2 = input.lightViewPos2.xy / input.lightViewPos2.w;
-	pTexCoord2 *= float2(0.5, -0.5);
+	pTexCoord2 *= float2(0.5f, -0.5f);
 	pTexCoord2 += float2(0.5f, 0.5f);
 
 	// Determine if the projected coordinates are in the 0 to 1 range.  If not don't do lighting.
-	if ((pTexCoord1.x < 0.f || pTexCoord1.x > 1.f || pTexCoord1.y < 0.f || pTexCoord1.y > 1.f) && (pTexCoord2.x < 0.f || pTexCoord2.x > 1.f || pTexCoord2.y < 0.f || pTexCoord2.y > 1.f))
+	if ((pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f) && (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
 	{
 		return textureColour;
 	}
@@ -86,10 +78,6 @@ float4 main(InputType input) : SV_TARGET
 	// Sample the shadow map (get depth of geometry)
 	depthValue2 = depthMapTexture2.Sample(shadowSampler1, pTexCoord2).r;
 	// Calculate the depth from the light.
-	if (input.lightViewPos2.w == 0)
-	{
-		input.lightViewPos2.w = 0.01;
-	}
 	lightDepthValue2 = input.lightViewPos2.z / input.lightViewPos2.w;
 	lightDepthValue2 -= shadowMapBias;
 	

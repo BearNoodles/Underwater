@@ -62,10 +62,11 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 	
 
-
 	float2 movingTex;
 	movingTex.x = texPos.x + (time * speed / 100);
 	movingTex.y = texPos.y;// +(time * speed / 100);
+
+	
 
 	float4 textureColour;
 	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);
@@ -101,6 +102,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.normal.x = -lerp(-1.0f, 1.0f, normalColour.x);
 	output.normal.y = lerp(-1.0f, 1.0f, normalColour.z);
 	output.normal.z = lerp(-1.0f, 1.0f, normalColour.y);
+
 
 	output.normal = mul(output.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
