@@ -39,8 +39,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	int shadowmapWidth = 2048;
 	int shadowmapHeight = 2048;
-	int sceneWidth = 100;
-	int sceneHeight = 100;
+	int sceneWidth = 200;
+	int sceneHeight = 200;
 
 	modelRot = 0;
 
@@ -56,13 +56,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	dLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	dLights[0].setDirection(1.0f, -1.0f, 0.0f);
-	dLights[0].setPosition(0.0f, 40.0f, 0.0f);
+	dLights[0].setPosition(-10.0f, 40.0f, 0.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	dLights[1].setDiffuseColour(1.0f, 0.0f, 0.0f, 1.0f);// shadows on hills?
-	dLights[1].setDirection(-1.0f, 1.0f, 0.0f);
-	dLights[1].setPosition(0.0f , 10.0f, 0.0f);
+	dLights[1].setDirection(-1.0f, -1.0f, 0.0f);
+	dLights[1].setPosition(0.0f , 20.0f, 0.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
@@ -257,8 +257,8 @@ void App1::finalPass()
 	//waterTexture->setRenderTarget(renderer->getDeviceContext());
 	//waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.39f, 0.58f, 0.92f, 1.0f);
 
-	waterTexture->setRenderTarget(renderer->getDeviceContext());
-	waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.0f, 1.0f, 1.0f, 1.0f);
+	renderer->setBackBufferRenderTarget();
+	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 
 	camera->update();
 	// get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
@@ -296,29 +296,29 @@ void App1::finalPass2()
 {
 
 	// Clear the scene. (default blue colour)
-	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	//renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 	
 	
 	// RENDER THE RENDER TEXTURE SCENE
 	// Requires 2D rendering and an ortho mesh.
-	renderer->setZBuffer(false);
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
-	
-	ortho->sendData(renderer->getDeviceContext());
+	//renderer->setZBuffer(false);
+	//XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	//XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
+	//XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+	//
+	//ortho->sendData(renderer->getDeviceContext());
+	////waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
+	////waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	//
 	//waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
 	//waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-	
-	waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
-	waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-	
-	
-	ortho2->sendData(renderer->getDeviceContext());
-	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
-	textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
-	
-	renderer->setZBuffer(true);
+	//
+	//
+	//ortho2->sendData(renderer->getDeviceContext());
+	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
+	//textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
+	//
+	//renderer->setZBuffer(true);
 
 	// Render GUI
 	gui();
@@ -383,14 +383,14 @@ void App1::gui()
 	ImGui::SliderFloat("TesselationW", &waterTess, 1.0f, 32.0f);
 	ImGui::SliderFloat("TesselationT", &terrainTess, 1.0f, 32.0f);
 	
-	ImGui::SliderFloat("LightPosX", &lightDir[0], -1, 1);
+	ImGui::SliderFloat("LightDirX", &lightDir[0], -1, 1);
 	//Dont let it do the zero thing
 	if (lightDir[0] == 0)
 	{
 		lightDir[0] = 0.0001f;
 	}
-	ImGui::SliderFloat("LightPosY", &lightDir[1], -1, 1);
-	ImGui::SliderFloat("LightPosZ", &lightDir[2], -1, 1);
+	ImGui::SliderFloat("LightDirY", &lightDir[1], -1, 1);
+	ImGui::SliderFloat("LightDirZ", &lightDir[2], -1, 1);
 
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
 	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);

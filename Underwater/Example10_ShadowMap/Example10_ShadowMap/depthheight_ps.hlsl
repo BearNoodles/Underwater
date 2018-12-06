@@ -1,7 +1,7 @@
 struct InputType
 {
 	float4 position : SV_POSITION;
-	float4 depthPosition : TEXCOORD1;
+	float4 depthPosition : TEXCOORD0;
 };
 
 float4 main(InputType input) : SV_TARGET

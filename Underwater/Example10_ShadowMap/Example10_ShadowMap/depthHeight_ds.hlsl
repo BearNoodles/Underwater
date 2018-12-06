@@ -34,7 +34,7 @@ struct InputType
 struct OutputType
 {
 	float4 position : SV_POSITION;
-	float4 depthPosition : TEXCOORD1;
+	float4 depthPosition : TEXCOORD0;
 };
 
 [domain("quad")]

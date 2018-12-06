@@ -38,7 +38,7 @@ float4 main(InputType input) : SV_TARGET
 	float depthValue2;
 	float lightDepthValue1;
 	float lightDepthValue2;
-	float shadowMapBias = 0.007f;
+	float shadowMapBias = 0.006f;
 	float4 colour1 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour2 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour;

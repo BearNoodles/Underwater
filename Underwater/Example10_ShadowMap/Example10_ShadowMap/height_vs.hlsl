@@ -9,7 +9,6 @@ struct OutputType
 {
 	float3 position : POSITION;
 	float2 tex : TEXCOORD0;
-
 };
 
 
