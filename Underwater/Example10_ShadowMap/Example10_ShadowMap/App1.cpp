@@ -15,8 +15,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh object and shader object
-	terrainPlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext());
-	surfacePlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext());
+	terrainPlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext(), 100);
+	surfacePlane = new TessellatedQuad(renderer->getDevice(), renderer->getDeviceContext(), 100);
+	fishMesh = new PointCubeMesh(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
 
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
@@ -33,6 +34,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	heightShader = new HeightShader(renderer->getDevice(), hwnd);
 	depthHeightShader = new DepthHeightShader(renderer->getDevice(), hwnd);
 	surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
+	billboardShader = new BillboardShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
 	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, -screenWidth/2.7f, screenHeight/2.7f);
@@ -80,7 +82,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	noWave = new float[2];
 	noWave[0] = 0;
 	noWave[1] = 0;
-	noWave[2] = 15;
+	noWave[2] = 40;
 	noWave[3] = 0;
 
 	fog = new float[1];
@@ -88,6 +90,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	fog[1] = 100;
 	screenW = screenWidth;
 	screenH = screenHeight;
+
+	waterPos = { -50.0f, -10.0f, 0.0f };
+	isUnderwater = false;
 
 }
 
@@ -124,7 +129,6 @@ bool App1::frame()
 
 bool App1::render()
 {
-
 	currentTime += timer->getTime();
 	wave[0] = currentTime;
 	dLights[0].setDirection(lightDir0[0], lightDir0[1], lightDir0[2]);
@@ -197,7 +201,7 @@ void App1::depthPass2()
 	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("terrainHeight"), noWave, terrainTess);
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
-	worldMatrix = positionSurface();
+	//worldMatrix = positionSurface();
 	
 	//surfacePlane->sendData(renderer->getDeviceContext());
 	//
@@ -258,11 +262,11 @@ void App1::depthPass3()
 void App1::finalPass()
 {
 	// Set the render target to be the render to texture and clear it
-	//waterTexture->setRenderTarget(renderer->getDeviceContext());
-	//waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.39f, 0.58f, 0.92f, 1.0f);
+	waterTexture->setRenderTarget(renderer->getDeviceContext());
+	waterTexture->clearRenderTarget(renderer->getDeviceContext(), 1.39f, 0.58f, 0.92f, 1.0f);
 
-	renderer->setBackBufferRenderTarget();
-	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	//renderer->setBackBufferRenderTarget();
+	//renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 
 	camera->update();
 	// get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
@@ -288,10 +292,16 @@ void App1::finalPass()
 	
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
-	
+
 	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix,
 		textureMgr->getTexture("brick"), shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), dLights);
 	shadowShader->render(renderer->getDeviceContext(), model->getIndexCount());
+
+	worldMatrix = positionFish();
+	fishMesh->sendData(renderer->getDeviceContext());
+
+	billboardShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"));
+	billboardShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
 	
 	renderer->setBackBufferRenderTarget();
 }
@@ -299,30 +309,38 @@ void App1::finalPass()
 void App1::finalPass2()
 {
 
-	// Clear the scene. (default blue colour)
-	//renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	//Clear the scene. (default blue colour)
+	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 	
 	
-	// RENDER THE RENDER TEXTURE SCENE
-	// Requires 2D rendering and an ortho mesh.
-	//renderer->setZBuffer(false);
-	//XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	//XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
-	//XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
-	//
-	//ortho->sendData(renderer->getDeviceContext());
-	////waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
-	////waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-	//
-	//waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
-	//waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
-	//
-	//
-	//ortho2->sendData(renderer->getDeviceContext());
-	//textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
-	//textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
-	//
-	//renderer->setZBuffer(true);
+	//RENDER THE RENDER TEXTURE SCENE
+	//Requires 2D rendering and an ortho mesh.
+	renderer->setZBuffer(false);
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+
+	ortho->sendData(renderer->getDeviceContext());
+	if (checkUnderwater())
+	{
+		//waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
+		//waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+
+		waterShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView(), currentTime);
+		waterShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+
+	}
+
+	else
+	{
+		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, waterTexture->getShaderResourceView());
+		textureShader->render(renderer->getDeviceContext(), ortho->getIndexCount());
+	}
+	ortho2->sendData(renderer->getDeviceContext());
+	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, playerDepthMap->getShaderResourceView());
+	textureShader->render(renderer->getDeviceContext(), ortho2->getIndexCount());
+	
+	renderer->setZBuffer(true);
 
 	// Render GUI
 	gui();
@@ -333,9 +351,9 @@ void App1::finalPass2()
 
 XMMATRIX App1::positionFloor()
 {
-	// Render model
+	// position floor
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(-25.0f, -10.0f, -20.0f);
+	worldMatrix = XMMatrixTranslation(-50.0f, -30.0f, 0.0f);
 	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -346,9 +364,9 @@ XMMATRIX App1::positionFloor()
 
 XMMATRIX App1::positionSurface()
 {
-	// Render model
+	// position water surface
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(-50.f, -10.0f, -20.0f);
+	worldMatrix = XMMatrixTranslation(waterPos.x, waterPos.y, waterPos.z);
 	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -359,7 +377,7 @@ XMMATRIX App1::positionSurface()
 
 XMMATRIX App1::positionModel()
 {
-	// Render model
+	// position model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
 	worldMatrix = XMMatrixTranslation(0.0f, 7.0f, 5.0f);
 	XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
@@ -368,6 +386,24 @@ XMMATRIX App1::positionModel()
 	worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
 
 	return worldMatrix;
+}
+
+XMMATRIX App1::positionFish()
+{
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixTranslation(0.0f, -20.0f, 0.0f);
+
+	return worldMatrix;
+}
+
+bool App1::checkUnderwater()
+{
+	if (camera->getPosition().y < waterPos.y + wave[2] / 2)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -412,7 +448,7 @@ void App1::gui()
 
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
 	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
-	ImGui::SliderFloat("Wave Height", &wave[2], 0, 15);
+	ImGui::SliderFloat("Wave Height", &wave[2], 0, 100);
 	ImGui::SliderFloat("Wave Frequency", &wave[3], 0, 2);
 
 	// Render UI

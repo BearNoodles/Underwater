@@ -4,8 +4,9 @@
 // Simple triangle mesh for example purposes. With colour, no texture coordinates or normals.
 
 // Initialise buffers
-TessellatedQuad::TessellatedQuad(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+TessellatedQuad::TessellatedQuad(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int quads)
 {
+	quadCount = quads;
 	initBuffers(device);
 }
 
@@ -21,7 +22,7 @@ void TessellatedQuad::initBuffers(ID3D11Device* device)
 {
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 
-	quadCount = 50;
+	//quadCount = 50;
 
 	vertexCount = 4 * quadCount * quadCount;
 	indexCount = 4 * quadCount * quadCount;

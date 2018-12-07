@@ -12,7 +12,9 @@
 #include "heightShader.h"
 #include "depthheightshader.h"
 #include "surfaceShader.h"
+#include "BillboardShader.h"
 #include "TessellatedQuad.h"
+#include "PointCubeMesh.h"
 
 #define DIRCOUNT 2
 
@@ -31,6 +33,9 @@ protected:
 	XMMATRIX positionFloor();
 	XMMATRIX positionSurface();
 	XMMATRIX positionModel();
+	XMMATRIX positionFish();
+	bool checkUnderwater();
+
 	void depthPass1();
 	void depthPass2();
 	void depthPass3();
@@ -41,6 +46,7 @@ protected:
 private:
 	TextureShader* textureShader;
 	TessellatedQuad* terrainPlane;
+	PointCubeMesh* fishMesh;
 	//PlaneMesh* surfacePlane;
 	TessellatedQuad* surfacePlane;
 	Model* model;
@@ -56,6 +62,7 @@ private:
 	HeightShader* heightShader;
 	DepthHeightShader* depthHeightShader;
 	SurfaceShader* surfaceShader;
+	BillboardShader* billboardShader;
 
 
 	RenderTexture* shadowMap;
@@ -77,6 +84,9 @@ private:
 
 	int screenW;
 	int screenH;
+
+	XMFLOAT3 waterPos;
+	bool isUnderwater;
 };
 
 #endif
