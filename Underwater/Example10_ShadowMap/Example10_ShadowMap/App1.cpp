@@ -55,14 +55,14 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	dLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	dLights[0].setDirection(1.0f, -1.0f, 0.0f);
-	dLights[0].setPosition(-10.0f, 40.0f, 0.0f);
+	dLights[0].setDirection(-1.0f, -1.0f, 0.0f);
+	dLights[0].setPosition(0.0f, 40.0f, 0.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[1].setDiffuseColour(1.0f, 0.0f, 0.0f, 1.0f);// shadows on hills?
-	dLights[1].setDirection(-1.0f, -1.0f, 0.0f);
-	dLights[1].setPosition(0.0f , 20.0f, 0.0f);
+	dLights[1].setDiffuseColour(0.0f, 0.0f, 0.0f, 1.0f);// shadows on hills?
+	dLights[1].setDirection(0.1f, 1.0f, 0.0f);
+	dLights[1].setPosition(0.0f , 40.0f, 0.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
@@ -75,12 +75,12 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	wave[1] = 5.0f; //Speed
 	wave[2] = 5.0f; //Height
 
-	noWave = new float[3];
+	noWave = new float[2];
 	noWave[0] = 0;
 	noWave[1] = 0;
 	noWave[2] = 15;
 
-	fog = new float[2];
+	fog = new float[1];
 	fog[0] = 0;
 	fog[1] = 100;
 	screenW = screenWidth;
@@ -161,7 +161,7 @@ void App1::depthPass1()
 	surfacePlane->sendData(renderer->getDeviceContext());
 	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("waterHeight"), wave, waterTess);
 	depthHeightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
-
+	
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
 
@@ -331,7 +331,7 @@ XMMATRIX App1::positionFloor()
 {
 	// Render model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(-25.f, -10.f, -20.0f);
+	worldMatrix = XMMatrixTranslation(-25.0f, -10.0f, -20.0f);
 	//XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	//worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	//XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -357,7 +357,7 @@ XMMATRIX App1::positionModel()
 {
 	// Render model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.f, 7.f, 5.f);
+	worldMatrix = XMMatrixTranslation(0.0f, 7.0f, 5.0f);
 	XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
 	XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
@@ -394,7 +394,7 @@ void App1::gui()
 
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
 	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
-	ImGui::SliderFloat("Wave Height", &wave[2], 0, 10);
+	ImGui::SliderFloat("Wave Height", &wave[2], 0, 15);
 	//ImGui::SliderFloat("Wave Speed", &wave[3], 0, 10);
 
 	// Render UI

@@ -1,5 +1,5 @@
 // depth shader.cpp
-#include "depthheightshader.h"
+#include "DepthHeightshader.h"
 
 
 DepthHeightShader::DepthHeightShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
@@ -25,6 +25,16 @@ DepthHeightShader::~DepthHeightShader()
 	{
 		matrixBuffer->Release();
 		matrixBuffer = 0;
+	}
+	if (tessBuffer)
+	{
+		tessBuffer->Release();
+		tessBuffer = 0;
+	}
+	if (heightBuffer)
+	{
+		heightBuffer->Release();
+		heightBuffer = 0;
 	}
 
 	// Release the layout.
@@ -60,17 +70,32 @@ void DepthHeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
 	// Create a texture sampler state description.
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	//samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	//samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	//samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	//samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	//samplerDesc.MipLODBias = 0.0f;
+	//samplerDesc.MaxAnisotropy = 1;
+	//samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	//samplerDesc.BorderColor[0] = 1.0f;
+	//samplerDesc.BorderColor[1] = 1.0f;
+	//samplerDesc.BorderColor[2] = 1.0f;
+	//samplerDesc.BorderColor[3] = 1.0f;
+	//samplerDesc.MinLOD = 0;
+	//samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//renderer->CreateSamplerState(&samplerDesc, &sampleState);
+	// Create a texture sampler state description.
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.MipLODBias = 0.0f;
 	samplerDesc.MaxAnisotropy = 1;
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 1.0f;
-	samplerDesc.BorderColor[1] = 1.0f;
-	samplerDesc.BorderColor[2] = 1.0f;
-	samplerDesc.BorderColor[3] = 1.0f;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);

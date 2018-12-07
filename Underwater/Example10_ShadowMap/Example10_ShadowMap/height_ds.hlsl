@@ -93,8 +93,13 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix[1]);
 	output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
 
+
+	float2 movingNormal;
+	movingNormal.x = texPos.x + (time * speed / 100);
+	movingNormal.y = texPos.y;// +(time * speed / 100);
+
 	float4 normalColour;
-	normalColour = texture2.SampleLevel(sampler1, movingTex, 0);
+	normalColour = texture2.SampleLevel(sampler1, movingNormal, 0);
 
 	//Calculate normals from height map colour
 	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK

@@ -10,7 +10,12 @@ using namespace DirectX;
 class DepthHeightShader : public BaseShader
 {
 private:
-
+	//struct MatrixBufferType
+	//{
+	//	XMMATRIX world;
+	//	XMMATRIX view;
+	//	XMMATRIX projection;
+	//};
 	struct TessellationBufferType
 	{
 		float tessellationFactorE;

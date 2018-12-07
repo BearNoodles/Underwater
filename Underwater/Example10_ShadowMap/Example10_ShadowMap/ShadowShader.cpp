@@ -157,6 +157,5 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow1);
-	deviceContext->PSSetSamplers(2, 1, &sampleStateShadow2);
 }
 
