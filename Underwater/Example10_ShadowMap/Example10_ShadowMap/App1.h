@@ -47,7 +47,8 @@ private:
 	float modelRot;
 
 	Light* dLights;
-	float* lightDir;
+	float* lightDir0;
+	float* lightDir1;
 
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;

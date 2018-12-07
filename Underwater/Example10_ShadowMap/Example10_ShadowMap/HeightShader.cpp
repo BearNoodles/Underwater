@@ -208,7 +208,7 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	heightPtr->time = wave[0];
 	heightPtr->speed = wave[1];
 	heightPtr->height = wave[2];
-	heightPtr->padding = 0.0f;
+	heightPtr->frequency = wave[3];
 	deviceContext->Unmap(heightBuffer, 0);
 	deviceContext->DSSetConstantBuffers(1, 1, &heightBuffer);
 

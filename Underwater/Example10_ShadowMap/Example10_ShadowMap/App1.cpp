@@ -24,7 +24,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	textureMgr->loadTexture("waveHeight", L"res/waveHeight.png");
 	textureMgr->loadTexture("terrainNormal", L"res/terrainNormal.png");
 	textureMgr->loadTexture("waveNormal", L"res/waveNormal.png");
-	textureMgr->loadTexture("water", L"res/water.png");
+	textureMgr->loadTexture("water", L"res/blue2.png");
 
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
@@ -53,32 +53,35 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	 
 	dLights = new Light[DIRCOUNT]();
 
-	dLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
+	dLights[0].setAmbientColour(0.2f, 0.2f, 0.2f, 1.0f);
 	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	dLights[0].setDirection(-1.0f, -1.0f, 0.0f);
 	dLights[0].setPosition(0.0f, 40.0f, 0.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[1].setDiffuseColour(0.0f, 0.0f, 0.0f, 1.0f);// shadows on hills?
-	dLights[1].setDirection(0.1f, 1.0f, 0.0f);
+	dLights[1].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);// shadows on hills?
+	dLights[1].setDirection(1.0f, -1.0f, 0.0f);
 	dLights[1].setPosition(0.0f , 40.0f, 0.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
-	lightDir = new float[3]{ 1.0f, -1.0f, 0.0f };
+	lightDir0 = new float[3]{ 1.0f, -1.0f, 0.0f };
+	lightDir1 = new float[3]{ -1.0f, -1.0f, 0.0f };
 
 	terrainTess = 1;
 	waterTess = 1;
 
-	wave = new float[2];
+	wave = new float[3];
 	wave[0] = 0; //Time
 	wave[1] = 5.0f; //Speed
 	wave[2] = 5.0f; //Height
+	wave[3] = 1.0f; //frequency
 
 	noWave = new float[2];
 	noWave[0] = 0;
 	noWave[1] = 0;
 	noWave[2] = 15;
+	noWave[3] = 0;
 
 	fog = new float[1];
 	fog[0] = 0;
@@ -124,7 +127,8 @@ bool App1::render()
 
 	currentTime += timer->getTime();
 	wave[0] = currentTime;
-	dLights[0].setDirection(lightDir[0], lightDir[1], lightDir[2]);
+	dLights[0].setDirection(lightDir0[0], lightDir0[1], lightDir0[2]);
+	dLights[1].setDirection(lightDir1[0], lightDir1[1], lightDir1[2]);
 
 	// Perform depth pass
 	depthPass1();
@@ -156,11 +160,11 @@ void App1::depthPass1()
 	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("terrainHeight"), noWave, terrainTess);
 	depthHeightShader->render(renderer->getDeviceContext(), terrainPlane->getIndexCount());
 
-	worldMatrix = positionSurface();
-	
-	surfacePlane->sendData(renderer->getDeviceContext());
-	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("waterHeight"), wave, waterTess);
-	depthHeightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
+	//worldMatrix = positionSurface();
+	//
+	//surfacePlane->sendData(renderer->getDeviceContext());
+	//depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0, textureMgr->getTexture("waterHeight"), wave, waterTess);
+	//depthHeightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 	
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -195,10 +199,10 @@ void App1::depthPass2()
 
 	worldMatrix = positionSurface();
 	
-	surfacePlane->sendData(renderer->getDeviceContext());
-	
-	depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("waterHeight"), wave, waterTess);
-	depthHeightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
+	//surfacePlane->sendData(renderer->getDeviceContext());
+	//
+	//depthHeightShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1, textureMgr->getTexture("waterHeight"), wave, waterTess);
+	//depthHeightShader->render(renderer->getDeviceContext(), surfacePlane->getIndexCount());
 
 	worldMatrix = positionModel();
 	model->sendData(renderer->getDeviceContext());
@@ -382,20 +386,34 @@ void App1::gui()
 
 	ImGui::SliderFloat("TesselationW", &waterTess, 1.0f, 32.0f);
 	ImGui::SliderFloat("TesselationT", &terrainTess, 1.0f, 32.0f);
-	
-	ImGui::SliderFloat("LightDirX", &lightDir[0], -1, 1);
+
+	ImGui::SliderFloat("LightDir0X", &lightDir0[0], -1, 1);
 	//Dont let it do the zero thing
-	if (lightDir[0] == 0)
+	if (lightDir0[0] == 0)
 	{
-		lightDir[0] = 0.0001f;
+		lightDir0[0] = 0.0001f;
 	}
-	ImGui::SliderFloat("LightDirY", &lightDir[1], -1, 1);
-	ImGui::SliderFloat("LightDirZ", &lightDir[2], -1, 1);
+	ImGui::SliderFloat("LightDir0Y", &lightDir0[1], -1, 1);
+	ImGui::SliderFloat("LightDir0Z", &lightDir0[2], -1, 1);
+
+
+	ImGui::SliderFloat("LightDir1X", &lightDir1[0], -1, 1);
+	//Dont let it do the zero thing
+	if (lightDir1[0] == 0)
+	{
+		lightDir1[0] = 0.0001f;
+	}
+	ImGui::SliderFloat("LightDir1Y", &lightDir1[1], -1, 1);
+	ImGui::SliderFloat("LightDir1Z", &lightDir1[2], -1, 1);
+
+	
+	dLights[0].setPosition(-lightDir0[0] * 40, -lightDir0[1] * 40, -lightDir0[2] * 40);
+	dLights[1].setPosition(-lightDir1[0] * 40, -lightDir1[1] * 40, -lightDir1[2] * 40);
 
 	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
 	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
 	ImGui::SliderFloat("Wave Height", &wave[2], 0, 15);
-	//ImGui::SliderFloat("Wave Speed", &wave[3], 0, 10);
+	ImGui::SliderFloat("Wave Frequency", &wave[3], 0, 2);
 
 	// Render UI
 	ImGui::Render();

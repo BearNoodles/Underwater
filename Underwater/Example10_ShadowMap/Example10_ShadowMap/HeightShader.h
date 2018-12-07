@@ -41,7 +41,7 @@ private:
 		float time;
 		float speed;
 		float height;
-		float padding;
+		float frequency;
 	};
 
 public:

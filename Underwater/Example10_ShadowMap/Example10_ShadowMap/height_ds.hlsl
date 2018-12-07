@@ -19,7 +19,7 @@ cbuffer WaveBuffer : register(b1)
 	float time;
 	float speed;
 	float height;
-	float padding;
+	float frequency;
 };
 
 struct ConstantOutputType
@@ -72,6 +72,8 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);
 
 	vertexPosition.y += textureColour.r * height;
+	vertexPosition.y += sin(frequency * vertexPosition.x + time * speed) * (height / 50.0f);
+	//vertexPosition.y += sin(frequency * vertexPosition.z + time * speed) * (height / 50.0f) + vertexPosition.y;
 	//vertexPosition.y +=  20;
 
 	//output.tex = texPos;
@@ -101,6 +103,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	float4 normalColour;
 	normalColour = texture2.SampleLevel(sampler1, movingNormal, 0);
 
+
 	//Calculate normals from height map colour
 	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK
 	//ALSO TODO, MOVE THE NORMALS WITH THE MOVING TEXTURE
@@ -109,6 +112,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.normal.z = lerp(-1.0f, 1.0f, normalColour.y);
 
 
+	normal.y = sin(frequency * normal.x + time * speed) * (height / 50.0f) + normal.y;
 	output.normal = mul(output.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
 

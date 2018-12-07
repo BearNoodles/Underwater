@@ -1,7 +1,7 @@
 ﻿  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\depthHeight_ds.cso
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ds.cso
-M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(76,13-70): warning X3206: 'calculateLighting': implicit truncation of vector type
-M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(91,13-70): warning X3206: 'calculateLighting': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(72,13-70): warning X3206: 'calculateLighting': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(87,13-70): warning X3206: 'calculateLighting': implicit truncation of vector type
   
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.cso
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_vs.cso
