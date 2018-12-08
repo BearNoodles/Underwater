@@ -2,6 +2,7 @@
 #ifndef _APP1_H
 #define _APP1_H
 
+#include <stdlib.h> 
 // Includes
 #include "DXF.h"	// include dxframework
 #include "TextureShader.h"
@@ -50,7 +51,11 @@ private:
 	//PlaneMesh* surfacePlane;
 	TessellatedQuad* surfacePlane;
 	Model* model;
+
 	float modelRot;
+	XMFLOAT3 fishPos;
+	float fishRot;
+	XMFLOAT3 waterPos;
 
 	Light* dLights;
 	float* lightDir0;
@@ -79,13 +84,14 @@ private:
 
 	float* wave;
 	float* noWave;
+	float* fishWave;
+	int randF[100];
 
 	float* fog;
 
 	int screenW;
 	int screenH;
-
-	XMFLOAT3 waterPos;
+	
 	bool isUnderwater;
 };
 

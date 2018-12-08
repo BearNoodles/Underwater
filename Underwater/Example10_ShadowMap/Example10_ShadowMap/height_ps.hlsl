@@ -87,7 +87,7 @@ float4 main(InputType input) : SV_TARGET
 		colour2 = calculateLighting(-direction[1], input.normal, diffuse[1]);
 	}
 	
-	colour2 = saturate(colour2 + ambient[1]);
+	//colour2 = saturate(colour2 + ambient[1]);
 	
 	colour = saturate(colour1 + colour2);
 	

@@ -39,6 +39,8 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
+	D3D11_BUFFER_DESC cameraBufferDesc;
+	D3D11_BUFFER_DESC heightBufferDesc;
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
@@ -73,6 +75,24 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	// Create the texture sampler state.
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 
+	// Setup camera buffer
+	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cameraBufferDesc.ByteWidth = sizeof(CameraBufferType);
+	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cameraBufferDesc.MiscFlags = 0;
+	cameraBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&cameraBufferDesc, NULL, &cameraBuffer);
+
+	// Setup wave buffer
+	heightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	heightBufferDesc.ByteWidth = sizeof(HeightBufferType);
+	heightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	heightBufferDesc.MiscFlags = 0;
+	heightBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
+
 }
 
 void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psFilename)
@@ -85,10 +105,12 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* ps
 }
 
 
-void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture)
+void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 camPos, float* wave)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
+	CameraBufferType* camPtr;
+	HeightBufferType* heightPtr;
 
 	// Transpose the matrices to prepare them for the shader.
 	XMMATRIX tworld = XMMatrixTranspose(worldMatrix);
@@ -102,6 +124,23 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	dataPtr->projection = tproj;
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->GSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	camPtr = (CameraBufferType*)mappedResource.pData;
+	camPtr->camerPos = camPos;
+	camPtr->padding = 0.0f;
+	deviceContext->Unmap(cameraBuffer, 0);
+	deviceContext->GSSetConstantBuffers(1, 1, &cameraBuffer);
+
+	deviceContext->Map(heightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	heightPtr = (HeightBufferType*)mappedResource.pData;
+
+	heightPtr->time = wave[0];
+	heightPtr->speed = wave[1];
+	heightPtr->height = wave[2];
+	heightPtr->frequency = wave[3];
+	deviceContext->Unmap(heightBuffer, 0);
+	deviceContext->GSSetConstantBuffers(2, 1, &heightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);

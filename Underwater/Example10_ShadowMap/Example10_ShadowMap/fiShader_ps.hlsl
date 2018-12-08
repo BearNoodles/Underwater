@@ -12,4 +12,5 @@ struct InputType
 float4 main(InputType input) : SV_TARGET
 {
 	return texture0.Sample(sampler0, input.tex);
+	//return float4(0,0,0,1);
 }

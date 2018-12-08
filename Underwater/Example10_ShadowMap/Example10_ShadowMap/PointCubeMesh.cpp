@@ -19,16 +19,16 @@ void PointCubeMesh::initBuffers(ID3D11Device* device)
 {
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 
-	quadRows = 10;
+	quadRows = 3;
 	quadCols = 10;
 	quadLayers = 10;
 
 	vertexCount = quadRows * quadCols * quadLayers;
 	indexCount = quadRows * quadCols * quadLayers;
 
-	quadGap = 2.5f;
+	quadGap = 10.0f;
 
-	VertexType_Colour* vertices = new VertexType_Colour[vertexCount];
+	VertexType* vertices = new VertexType[vertexCount];
 	unsigned long* indices = new unsigned long[indexCount];
 
 	// Load the vertex array with data.
@@ -43,7 +43,6 @@ void PointCubeMesh::initBuffers(ID3D11Device* device)
 				int y = j * quadLayers;
 				int z = k;
 				vertices[x + y + z].position = XMFLOAT3(i * quadGap, j * quadGap, k * quadGap);
-				vertices[x + y + z].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
 				indices[x + y + z] = x + y + z;
 			}
@@ -69,7 +68,7 @@ void PointCubeMesh::initBuffers(ID3D11Device* device)
 	// Load the index array with data.
 
 
-	D3D11_BUFFER_DESC vertexBufferDesc = { sizeof(VertexType_Colour) * vertexCount, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
+	D3D11_BUFFER_DESC vertexBufferDesc = { sizeof(VertexType) * vertexCount, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
 	vertexData = { vertices, 0 , 0 };
 	device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
 
@@ -91,7 +90,7 @@ void PointCubeMesh::sendData(ID3D11DeviceContext* deviceContext, D3D_PRIMITIVE_T
 	unsigned int offset;
 
 	// Set vertex buffer stride and offset.
-	stride = sizeof(VertexType_Colour);
+	stride = sizeof(VertexType);
 	offset = 0;
 
 	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);

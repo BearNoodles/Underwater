@@ -2,7 +2,7 @@
 // Lab 1 example, simple coloured triangle mesh
 #include "App1.h"
 
-#define PIPI 6.28318530718
+#define PI 3.14159265359
 
 App1::App1()
 {
@@ -37,14 +37,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	billboardShader = new BillboardShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
-	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, -screenWidth/2.7f, screenHeight/2.7f);
+	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, -screenWidth / 2.7f, screenHeight / 2.7f);
 
-	int shadowmapWidth = 2048;
-	int shadowmapHeight = 2048;
-	int sceneWidth = 200;
-	int sceneHeight = 200;
+	int shadowmapWidth = 8192;
+	int shadowmapHeight = 8192;
+	int sceneWidth = 150;
+	int sceneHeight = 150;
 
-	modelRot = 0;
 
 	// This is your shadow map
 	shadowMap = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
@@ -52,19 +51,19 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	playerDepthMap = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
 
 	waterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-	 
+
 	dLights = new Light[DIRCOUNT]();
 
 	dLights[0].setAmbientColour(0.2f, 0.2f, 0.2f, 1.0f);
 	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	dLights[0].setDirection(-1.0f, -1.0f, 0.0f);
-	dLights[0].setPosition(0.0f, 40.0f, 0.0f);
+	dLights[0].setPosition(0.0f, 40.0f, 50.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	dLights[1].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);// shadows on hills?
 	dLights[1].setDirection(1.0f, -1.0f, 0.0f);
-	dLights[1].setPosition(0.0f , 40.0f, 0.0f);
+	dLights[1].setPosition(0.0f, 40.0f, 0.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	lightDir0 = new float[3]{ 1.0f, -1.0f, 0.0f };
@@ -79,11 +78,22 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	wave[2] = 5.0f; //Height
 	wave[3] = 1.0f; //frequency
 
-	noWave = new float[2];
+	noWave = new float[3];
 	noWave[0] = 0;
 	noWave[1] = 0;
 	noWave[2] = 40;
 	noWave[3] = 0;
+
+	fishWave = new float[3];
+	fishWave[0] = 0;
+	fishWave[1] = 5.0f;
+	fishWave[2] = 5.0f;
+	fishWave[3] = 1.0f;
+	srand(timer->getTime());
+	for (int i = 0; i < 100; i++)
+	{
+		randF[i] = rand() % 10;
+	}
 
 	fog = new float[1];
 	fog[0] = 0;
@@ -91,6 +101,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	screenW = screenWidth;
 	screenH = screenHeight;
 
+
+	modelRot = 0;
+	fishRot = 0;
+	fishPos = {-50.0f, -30.0f, 0.0f};
 	waterPos = { -50.0f, -10.0f, 0.0f };
 	isUnderwater = false;
 
@@ -133,6 +147,7 @@ bool App1::render()
 	wave[0] = currentTime;
 	dLights[0].setDirection(lightDir0[0], lightDir0[1], lightDir0[2]);
 	dLights[1].setDirection(lightDir1[0], lightDir1[1], lightDir1[2]);
+	fishRot = currentTime;
 
 	// Perform depth pass
 	depthPass1();
@@ -300,7 +315,7 @@ void App1::finalPass()
 	worldMatrix = positionFish();
 	fishMesh->sendData(renderer->getDeviceContext());
 
-	billboardShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"));
+	billboardShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), camera->getPosition(), fishWave);
 	billboardShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
 	
 	renderer->setBackBufferRenderTarget();
@@ -379,19 +394,19 @@ XMMATRIX App1::positionModel()
 {
 	// position model
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.0f, 7.0f, 5.0f);
+	worldMatrix = XMMatrixTranslation(-30.0f, 10.0f, 105.0f);
 	XMMATRIX scaleMatrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
 	worldMatrix = XMMatrixMultiply(worldMatrix, scaleMatrix);
-	XMMATRIX rotMatrix = XMMatrixRotationX(modelRot);
+	XMMATRIX rotMatrix = XMMatrixRotationY(modelRot + PI);
 	worldMatrix = XMMatrixMultiply(rotMatrix, worldMatrix);
-
 	return worldMatrix;
 }
 
 XMMATRIX App1::positionFish()
 {
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	worldMatrix = XMMatrixTranslation(0.0f, -20.0f, 0.0f);
+	//worldMatrix = XMMatrixTranslation(-sinf(-100.0f * currentTime / 100), sinf(-30.0f * currentTime / 100), cosf(-50.0f * currentTime / 100));
+	worldMatrix = XMMatrixTranslation(-50.0f + -sinf(-100.0f * currentTime / 100.0f), -30.0f + sinf(-30.0f * currentTime / 100.0f), cosf(-50.0f * currentTime / 100.0f));
 
 	return worldMatrix;
 }
@@ -405,8 +420,6 @@ bool App1::checkUnderwater()
 
 	return false;
 }
-
-
 
 
 void App1::gui()
@@ -443,10 +456,10 @@ void App1::gui()
 	ImGui::SliderFloat("LightDir1Z", &lightDir1[2], -1, 1);
 
 	
-	dLights[0].setPosition(-lightDir0[0] * 40, -lightDir0[1] * 40, -lightDir0[2] * 40);
+	dLights[0].setPosition(-lightDir0[0] * 40, -lightDir0[1] * 40, -lightDir0[2] * 40 + 50);
 	dLights[1].setPosition(-lightDir1[0] * 40, -lightDir1[1] * 40, -lightDir1[2] * 40);
 
-	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PIPI);
+	ImGui::SliderFloat("Teapot rotation", &modelRot, 0, PI + PI);
 	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
 	ImGui::SliderFloat("Wave Height", &wave[2], 0, 100);
 	ImGui::SliderFloat("Wave Frequency", &wave[3], 0, 2);
