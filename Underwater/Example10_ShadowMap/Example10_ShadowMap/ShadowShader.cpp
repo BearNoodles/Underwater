@@ -25,10 +25,15 @@ ShadowShader::~ShadowShader()
 		layout->Release();
 		layout = 0;
 	}
-	if (lightBuffer)
-	{	
-		lightBuffer->Release();
-		lightBuffer = 0;
+	if (dLightBuffer)
+	{
+		dLightBuffer->Release();
+		dLightBuffer = 0;
+	}
+	if (sLightBuffer)
+	{
+		sLightBuffer->Release();
+		sLightBuffer = 0;
 	}
 
 	//Release base shader components
@@ -40,7 +45,8 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
-	D3D11_BUFFER_DESC lightBufferDesc;
+	D3D11_BUFFER_DESC dLightBufferDesc;
+	D3D11_BUFFER_DESC sLightBufferDesc;
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
@@ -93,23 +99,33 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[3] = 1.0f;
 	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow2);
 
-	// Setup light buffer
-	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
-	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc.MiscFlags = 0;
-	lightBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&lightBufferDesc, NULL, &lightBuffer);
+	// Setup directional light buffer
+	dLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	dLightBufferDesc.ByteWidth = sizeof(DirLightBufferType);
+	dLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	dLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	dLightBufferDesc.MiscFlags = 0;
+	dLightBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&dLightBufferDesc, NULL, &dLightBuffer);
+
+	// Setup spot light buffer
+	sLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	sLightBufferDesc.ByteWidth = sizeof(SpotLightBufferType);
+	sLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	sLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	sLightBufferDesc.MiscFlags = 0;
+	sLightBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&sLightBufferDesc, NULL, &sLightBuffer);
 
 }
 
 
-void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, Light* dLights)
+void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, ID3D11ShaderResourceView*depthMap3, Light* dLights, Light* sLights)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
-	LightBufferType* dLightPtr;
+	DirLightBufferType* dLightPtr;
+	SpotLightBufferType* sLightPtr;
 	
 	// Transpose the matrices to prepare them for the shader.
 	XMMATRIX tworld = XMMatrixTranspose(worldMatrix);
@@ -119,6 +135,8 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	XMMATRIX tLightProjectionMatrix0 = XMMatrixTranspose(dLights[0].getOrthoMatrix());
 	XMMATRIX tLightViewMatrix1 = XMMatrixTranspose(dLights[1].getViewMatrix());
 	XMMATRIX tLightProjectionMatrix1 = XMMatrixTranspose(dLights[1].getOrthoMatrix());
+	XMMATRIX tLightViewMatrix2 = XMMatrixTranspose(sLights[0].getViewMatrix());
+	XMMATRIX tLightProjectionMatrix2 = XMMatrixTranspose(sLights[0].getOrthoMatrix());
 	
 	// Lock the constant buffer so it can be written to.
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -135,8 +153,8 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 
 	//Additional
 	// Send light data to pixel shader
-	deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	dLightPtr = (LightBufferType*)mappedResource.pData;
+	deviceContext->Map(dLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	dLightPtr = (DirLightBufferType*)mappedResource.pData;
 
 	//1st Directional light
 	dLightPtr->ambient[0] = dLights[0].getAmbientColour();
@@ -148,13 +166,29 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dLightPtr->diffuse[1] = dLights[1].getDiffuseColour();
 	dLightPtr->direction[1] = { dLights[1].getDirection().x, dLights[1].getDirection().y, dLights[1].getDirection().z, 0 };
 	//dlightPtr->padding[1] = 0;
-	deviceContext->Unmap(lightBuffer, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+	deviceContext->Unmap(dLightBuffer, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &dLightBuffer);
+
+
+	//spot light
+	deviceContext->Map(sLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	sLightPtr = (SpotLightBufferType*)mappedResource.pData;
+
+	sLightPtr->ambient[0] = sLights[0].getAmbientColour();
+	sLightPtr->diffuse[0] = sLights[0].getDiffuseColour();
+	sLightPtr->position[0] = { sLights[0].getPosition().x, sLights[0].getPosition().y, sLights[0].getPosition().z, 0.0f };
+	sLightPtr->attenuation[0] = { 0.1f, 0.005f, 0.0f, 1000.0f }; //Constant, Linear and Quadratic Factors and max range of spotlight
+	sLightPtr->direction[0] = { sLights[0].getDirection().x, sLights[0].getDirection().y, sLights[0].getDirection().z, 0 };
+	sLightPtr->cone[0] = { 10.0f, 0.0f, 0.0f, 0.0f }; //float4 for padding
+	
+	deviceContext->Unmap(sLightBuffer, 0);
+	deviceContext->PSSetConstantBuffers(1, 1, &sLightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &depthMap);
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
+	deviceContext->PSSetShaderResources(3, 1, &depthMap3);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow1);
 }

@@ -40,6 +40,7 @@ protected:
 	void depthPass1();
 	void depthPass2();
 	void depthPass3();
+	void depthPass4();
 	void finalPass();
 	void finalPass2();
 	void gui();
@@ -58,8 +59,10 @@ private:
 	XMFLOAT3 waterPos;
 
 	Light* dLights;
+	Light* pLights;
 	float* lightDir0;
 	float* lightDir1;
+	float* pLightPos;
 
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
@@ -72,6 +75,7 @@ private:
 
 	RenderTexture* shadowMap;
 	RenderTexture* shadowMap2;
+	RenderTexture* shadowMap3;
 	RenderTexture* playerDepthMap;
 	RenderTexture* waterTexture;
 	OrthoMesh* ortho;

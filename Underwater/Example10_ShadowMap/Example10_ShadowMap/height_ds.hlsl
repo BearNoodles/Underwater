@@ -1,6 +1,7 @@
 // Tessellation domain shader
 // After tessellation the domain shader processes the all the vertices
 #define DIRCOUNT 2
+#define POINTCOUNT 1
 
 Texture2D texture1 : register(t0);
 Texture2D texture2 : register(t1);
@@ -11,8 +12,8 @@ cbuffer MatrixBuffer : register(b0)
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-	matrix lightViewMatrix[DIRCOUNT];
-	matrix lightProjectionMatrix[DIRCOUNT];
+	matrix lightViewMatrix[DIRCOUNT + POINTCOUNT];
+	matrix lightProjectionMatrix[DIRCOUNT + POINTCOUNT];
 };
 cbuffer WaveBuffer : register(b1)
 {
@@ -41,6 +42,8 @@ struct OutputType
 	float3 normal : NORMAL;
 	float4 lightViewPos0 : TEXCOORD1;
 	float4 lightViewPos1 : TEXCOORD2;
+	float4 lightViewPos2 : TEXCOORD3;
+	float3 worldPosition : TEXCOORD4;
 };
 
 [domain("quad")]
@@ -95,6 +98,12 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix[1]);
 	output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
 
+	output.lightViewPos2 = mul(float4(vertexPosition, 1.0f), worldMatrix);
+	output.lightViewPos2 = mul(output.lightViewPos2, lightViewMatrix[2]);
+	output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix[2]);
+
+	output.worldPosition = mul(vertexPosition, worldMatrix).xyz;
+
 
 	float2 movingNormal;
 	movingNormal.x = texPos.x + (time * speed / 100);
@@ -112,7 +121,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	output.normal.z = lerp(-1.0f, 1.0f, normalColour.y);
 
 
-	normal.y = sin(frequency * normal.x + time * speed) * (height / 50.0f) + normal.y;
+	normal.y += sin(frequency * normal.x + time * speed) * (height / 50.0f);
 	output.normal = mul(output.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
 

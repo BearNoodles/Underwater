@@ -1,12 +1,13 @@
 #define DIRCOUNT 2
+#define SPOTCOUNT 1
 
 cbuffer MatrixBuffer : register(b0)
 {
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-	matrix lightViewMatrix[DIRCOUNT];
-	matrix lightProjectionMatrix[DIRCOUNT];
+	matrix lightViewMatrix[DIRCOUNT + SPOTCOUNT];
+	matrix lightProjectionMatrix[DIRCOUNT + SPOTCOUNT];
 };
 
 struct InputType
@@ -23,6 +24,8 @@ struct OutputType
 	float3 normal : NORMAL;
     float4 lightViewPos0 : TEXCOORD1;
     float4 lightViewPos1 : TEXCOORD2;
+    float4 lightViewPos2 : TEXCOORD3;
+	float3 worldPosition : TEXCOORD4;
 };
 
 
@@ -44,9 +47,15 @@ OutputType main(InputType input)
 	output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix[1]);
 	output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
 
+	output.lightViewPos2 = mul(input.position, worldMatrix);
+	output.lightViewPos2 = mul(output.lightViewPos2, lightViewMatrix[2]);
+	output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix[2]);
+
     output.tex = input.tex;
     output.normal = mul(input.normal, (float3x3)worldMatrix);
     output.normal = normalize(output.normal);
+
+	output.worldPosition = mul(input.position, worldMatrix).xyz;
 
 	return output;
 }
