@@ -37,7 +37,7 @@ ConstantOutputType PatchConstantFunction(InputPatch<InputType, 4> inputPatch, ui
 	output.edges[2] = tessellationFactorE;// tessellationFactor;
 	output.edges[3] = tessellationFactorE;// tessellationFactor;
 
-										  // Set the tessellation factor for tessallating inside the triangle.
+	// Set the tessellation factor for tessallating inside the triangle.
 	output.inside[0] = tessellationFactorI;// tessellationFactor;
 	output.inside[1] = tessellationFactorI;// tessellationFactor;
 
@@ -57,9 +57,6 @@ OutputType main(InputPatch<InputType, 4> patch, uint pointId : SV_OutputControlP
 
 	// Set the position for this control point as the output position.
 	output.position = patch[pointId].position;
-
-	// Set the input colour as the output colour.
-	//output.colour = patch[pointId].colour;
 
 	output.tex = patch[pointId].tex;
 

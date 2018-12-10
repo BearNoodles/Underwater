@@ -63,10 +63,6 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 	texCoords[2] = float2(1.0f, 1.0f);
 	texCoords[3] = float2(.0f, 1.0f);
 
-	//vertices[0] = input[0].position + (right);
-	//vertices[1] = input[0].position + (up);
-	//vertices[2] = input[0].position;
-	//vertices[3] = input[0].position - (right);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -74,7 +70,7 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 		output.position = mul(output.position, worldMatrix);
 		output.position = mul(output.position, viewMatrix);
 		output.position = mul(output.position, projectionMatrix);
-		//output.colour = input[0].colour;
+
 		output.tex = texCoords[i];
 		output.normal = mul(normalize(cameraVec), (float3x3) worldMatrix);
 		output.normal = normalize(output.normal);

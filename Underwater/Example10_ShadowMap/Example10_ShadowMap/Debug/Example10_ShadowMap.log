@@ -2,18 +2,40 @@
 M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\depthFish_vs.hlsl(19,2-33): warning X3206: implicit truncation of vector type
   
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\depthFish_vs.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\depthHeight_ds.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\depthHeight_hs.cso
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\fiShader_ps.hlsl(75,31-144): warning X3206: 'calculateAttenuation': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\fiShader_ps.hlsl(76,48-81): warning X3206: implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\fiShader_ps.hlsl(108,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\fiShader_ps.hlsl(123,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
+  
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\fiShader_ps.cso
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ds.hlsl(102,25-56): warning X3206: 'mul': implicit truncation of vector type
+  
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ds.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_hs.cso
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(74,31-144): warning X3206: 'calculateAttenuation': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(75,48-81): warning X3206: implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(107,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
+M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.hlsl(122,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
+  
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_ps.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\height_vs.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\underwater_ps.cso
 M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_ps.hlsl(75,31-144): warning X3206: 'calculateAttenuation': implicit truncation of vector type
 M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_ps.hlsl(76,48-81): warning X3206: implicit truncation of vector type
 M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_ps.hlsl(108,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
 M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_ps.hlsl(123,13-72): warning X3206: 'calculateLighting': implicit truncation of vector type
   
   compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_ps.cso
+  compilation object save succeeded; see M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Example10_ShadowMap\shadow_vs.cso
   App1.cpp
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(42): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(58): warning C4316: 'Light': object allocated on the heap may not be aligned 16
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(59): warning C4316: 'Light': object allocated on the heap may not be aligned 16
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(65): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(63): warning C4316: 'Light': object allocated on the heap may not be aligned 16
+m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(64): warning C4316: 'Light': object allocated on the heap may not be aligned 16
 m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(71): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(77): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(473): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(78): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(85): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+m:\underwater\underwater\underwater\example10_shadowmap\example10_shadowmap\app1.cpp(421): warning C4305: 'argument': truncation from 'double' to 'float'
+  Main.cpp
+  Generating Code...
   Example10_ShadowMap.vcxproj -> M:\Underwater\Underwater\Underwater\Example10_ShadowMap\Debug\Example10_ShadowMap.exe

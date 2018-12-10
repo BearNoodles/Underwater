@@ -36,11 +36,6 @@ UnderwaterShader::~UnderwaterShader()
 		waterBuffer = 0;
 	}
 
-	//if (fogBuffer)
-	//{
-	//	waterBuffer->Release();
-	//	waterBuffer = 0;
-	//}
 
 	//Release base shader components
 	BaseShader::~BaseShader();
@@ -68,9 +63,9 @@ void UnderwaterShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.MipLODBias = 0.0f;
 	samplerDesc.MaxAnisotropy = 1;
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
@@ -88,17 +83,6 @@ void UnderwaterShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	waterBufferDesc.MiscFlags = 0;
 	waterBufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&waterBufferDesc, NULL, &waterBuffer);
-
-	// Setup buffer
-	// Setup the description of the dynamic constant buffer that is in the pixel shader.
-	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
-	//fogBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	//fogBufferDesc.ByteWidth = sizeof(UnderwaterBufferType);
-	//fogBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//fogBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//fogBufferDesc.MiscFlags = 0;
-	//fogBufferDesc.StructureByteStride = 0;
-	//renderer->CreateBuffer(&fogBufferDesc, NULL, &fogBuffer);
 
 }
 
@@ -134,18 +118,6 @@ void UnderwaterShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->Unmap(waterBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &waterBuffer);
 
-	
-
-	//// Send data to vertex shader
-	//FogBufferType* fogPtr;
-	//deviceContext->Map(fogBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	//fogPtr = (FogBufferType*)mappedResource.pData;
-	//fogPtr->cameraPosition = { cameraPos.x, cameraPos.y, cameraPos.z };
-	//fogPtr->fogStart = fog[0];
-	//fogPtr->fogEnd = fog[1];
-	//fogPtr->padding = { 0.0f, 0.0f, 0.0f };
-	//deviceContext->Unmap(fogBuffer, 0);
-	//deviceContext->VSSetConstantBuffers(0, 1, &fogBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);

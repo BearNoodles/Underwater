@@ -5,7 +5,6 @@ Texture2D depthMapTexture2 : register(t3);
 
 SamplerState diffuseSampler  : register(s0);
 SamplerState shadowSampler : register(s1);
-//SamplerState shadowSampler2 : register(s2);
 
 #define DIRCOUNT 2
 #define POINTCOUNT 1
@@ -90,8 +89,8 @@ float4 main(InputType input) : SV_TARGET
 	
 	// Determine if the projected coordinates are in the 0 to 1 range.  If not don't do lighting.
 	if ((pTexCoord0.x < 0.0f || pTexCoord0.x > 1.0f || pTexCoord0.y < 0.0f || pTexCoord0.y > 1.0f)
-		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f)
-		&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
+		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f))
+		//&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
 	{
 		return textureColour;
 	}

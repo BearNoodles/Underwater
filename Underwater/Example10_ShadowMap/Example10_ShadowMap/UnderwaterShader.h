@@ -13,15 +13,6 @@ private:
 		float time;
 		XMFLOAT3 padding;
 	};
-
-	//struct FogBufferType
-	//{
-	//	XMFLOAT3 cameraPosition;
-	//	float fogStart;
-	//	float fogEnd;
-	//	XMFLOAT3 padding;
-	//};
-
 	
 
 public:
@@ -37,6 +28,5 @@ private:
 	ID3D11Buffer * matrixBuffer;
 	ID3D11SamplerState* sampleState;
 	ID3D11Buffer* waterBuffer;
-	//ID3D11Buffer* fogBuffer;
 };
 

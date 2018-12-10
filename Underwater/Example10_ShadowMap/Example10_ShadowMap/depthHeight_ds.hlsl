@@ -54,7 +54,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 	float2 movingTex;
 	movingTex.x = texPos.x + (time * speed / 100);
-	movingTex.y = texPos.y;// +(time * speed / 100);
+	movingTex.y = texPos.y;
 
 	float4 textureColour;
 	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);

@@ -90,8 +90,8 @@ float4 main(InputType input) : SV_TARGET
 	
 	// Determine if the projected coordinates are in the 0 to 1 range.  If not don't do lighting.
 	if ((pTexCoord0.x < 0.0f || pTexCoord0.x > 1.0f || pTexCoord0.y < 0.0f || pTexCoord0.y > 1.0f)
-		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f)
-		&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
+		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f))
+		//&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
 	{
 		return textureColour;
 	}

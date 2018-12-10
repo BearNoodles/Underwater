@@ -67,7 +67,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 	float2 movingTex;
 	movingTex.x = texPos.x + (time * speed / 100);
-	movingTex.y = texPos.y;// +(time * speed / 100);
+	movingTex.y = texPos.y;
 
 	
 
@@ -76,10 +76,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 	vertexPosition.y += textureColour.r * height;
 	vertexPosition.y += sin(frequency * vertexPosition.x + time * speed) * (height / 50.0f);
-	//vertexPosition.y += sin(frequency * vertexPosition.z + time * speed) * (height / 50.0f) + vertexPosition.y;
-	//vertexPosition.y +=  20;
 
-	//output.tex = texPos;
 	output.tex = texPos;
 
 
@@ -114,19 +111,13 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 
 	//Calculate normals from height map colour
-	//TODO MAYBE USE THE HEIGHT TO MULTIPLY THESE? IDK
-	//ALSO TODO, MOVE THE NORMALS WITH THE MOVING TEXTURE
 	output.normal.x = -lerp(-1.0f, 1.0f, normalColour.x);
 	output.normal.y = lerp(-1.0f, 1.0f, normalColour.z);
 	output.normal.z = lerp(-1.0f, 1.0f, normalColour.y);
 
-
-	normal.y += sin(frequency * normal.x + time * speed) * (height / 50.0f);
 	output.normal = mul(output.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
 
-	// Send the input colour into the pixel shader.
-	//output.colour = patch[0].colour;
 	return output;
 }
 

@@ -50,8 +50,7 @@ private:
 private:
 	ID3D11Buffer * matrixBuffer;
 	ID3D11SamplerState* sampleState;
-	ID3D11SamplerState* sampleStateShadow1;
-	ID3D11SamplerState* sampleStateShadow2;
+	ID3D11SamplerState* sampleStateShadow;
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* waveBuffer;
 };

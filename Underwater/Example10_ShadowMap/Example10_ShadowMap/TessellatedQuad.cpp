@@ -22,7 +22,6 @@ void TessellatedQuad::initBuffers(ID3D11Device* device)
 {
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 
-	//quadCount = 50;
 
 	vertexCount = 4 * quadCount * quadCount;
 	indexCount = 4 * quadCount * quadCount;
@@ -57,14 +56,6 @@ void TessellatedQuad::initBuffers(ID3D11Device* device)
 
 	}
 
-
-	// Load the index array with data.
-	//indices[0] = 0; 
-	//indices[1] = 1; 
-	//indices[2] = 2; 
-	//indices[3] = 3; 
-	//indices[4] = 3; // top left
-	//indices[5] = 1; // bottom left
 
 	D3D11_BUFFER_DESC vertexBufferDesc = { sizeof(VertexType_Texture) * vertexCount, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
 	vertexData = { vertices, 0 , 0 };

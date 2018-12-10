@@ -50,21 +50,6 @@ void PointCubeMesh::initBuffers(ID3D11Device* device)
 	}
 
 
-	///
-
-	//vertices[4].position = XMFLOAT3(1.0f, 1.0f, -1.0f);  // Top right.
-	//vertices[4].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	//
-	//vertices[5].position = XMFLOAT3(0.0f, 1.0f, -1.0f);  // Top left.
-	//vertices[5].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	//
-	//vertices[6].position = XMFLOAT3(3.0f, 0.0f, -1.0f);  // bottom right.
-	//vertices[6].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	//
-	//vertices[7].position = XMFLOAT3(1.0f, 0.0f, -1.0f);  // bottom left.
-	//vertices[7].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-
-
 	// Load the index array with data.
 
 

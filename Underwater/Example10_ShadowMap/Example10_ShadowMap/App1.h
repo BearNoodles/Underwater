@@ -2,7 +2,6 @@
 #ifndef _APP1_H
 #define _APP1_H
 
-#include <stdlib.h> 
 // Includes
 #include "DXF.h"	// include dxframework
 #include "TextureShader.h"
@@ -32,39 +31,58 @@ public:
 
 protected:
 	bool render();
+
+	//Positions each object in the scene
 	XMMATRIX positionFloor();
 	XMMATRIX positionSurface();
 	XMMATRIX positionModel();
 	XMMATRIX positionFish();
+
+	//Returns true if the camera is below the water level
 	bool checkUnderwater();
 
+	//Each depth pass creates a depth map texture 1 of the lights
 	void depthPass1();
 	void depthPass2();
 	void depthPass3();
-	void depthPass4();
-	void finalPass();
-	void finalPass2();
+
+	//Final pass renders 
+	void WaterTexturePass();
+	void PostProcessingPass();
 	void gui();
 
 private:
-	TextureShader* textureShader;
+	//Meshes for objects in the scene
+	PointCubeMesh * fishMesh;
 	TessellatedQuad* terrainPlane;
-	PointCubeMesh* fishMesh;
-	//PlaneMesh* surfacePlane;
 	TessellatedQuad* surfacePlane;
 	Model* model;
 
-	float modelRot;
+	//Object start positions
 	XMFLOAT3 fishPos;
-	float fishRot;
+	XMFLOAT3 floorPos;
 	XMFLOAT3 waterPos;
+	XMFLOAT3 modelPos;
 
+	//Pointer for arrays of lights and their directions/position
 	Light* dLights;
 	Light* pLights;
 	float* lightDir0;
 	float* lightDir1;
 	float* pLightPos;
 
+	//True when the point light is switched on
+	bool pLightOn;
+
+	//Changeable colour for each directional light. Black and white for the point light
+	float* lightColour0;
+	float* lightColour1;
+	float* pLightColour;
+	float* blackColour;
+	float* whiteColour;
+
+	//Shaders
+	TextureShader* textureShader;
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
 	UnderwaterShader* waterShader;
@@ -74,31 +92,30 @@ private:
 	BillboardShader* billboardShader;
 	DepthFishShader* depthFishShader;
 
-
+	//Render textures for shadow maps and 1 for the final scene to be rendered onto
 	RenderTexture* shadowMap;
 	RenderTexture* shadowMap2;
 	RenderTexture* shadowMap3;
-	RenderTexture* playerDepthMap;
 	RenderTexture* waterTexture;
+	//Orthomesh for the final render texture
 	OrthoMesh* ortho;
-	OrthoMesh* ortho2;
 
+	//Changeable esselation values for the water and the terrain
 	float terrainTess;
 	float waterTess;
 
+	//how much time has passed since the beginning
 	float currentTime;
 
+	//Pointer to float4 of values to control the time, speed height and frequency
+	//To pass into the shaders with height mapping
 	float* wave;
 	float* noWave;
 	float* fishWave;
-	int randF[100];
 
-	float* fog;
-
+	//Screen width and height
 	int screenW;
 	int screenH;
-	
-	bool isUnderwater;
 };
 
 #endif

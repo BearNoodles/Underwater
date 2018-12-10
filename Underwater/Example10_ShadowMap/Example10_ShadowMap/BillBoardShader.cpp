@@ -35,6 +35,11 @@ BillboardShader::~BillboardShader()
 		layout->Release();
 		layout = 0;
 	}
+	if (cameraBuffer)
+	{
+		cameraBuffer->Release();
+		cameraBuffer = 0;
+	}
 	if (dLightBuffer)
 	{
 		dLightBuffer->Release();

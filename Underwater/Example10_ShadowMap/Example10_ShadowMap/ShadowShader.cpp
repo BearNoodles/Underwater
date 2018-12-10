@@ -15,6 +15,11 @@ ShadowShader::~ShadowShader()
 		sampleState->Release();
 		sampleState = 0;
 	}
+	if (sampleStateShadow)
+	{
+		sampleStateShadow->Release();
+		sampleStateShadow = 0;
+	}
 	if (matrixBuffer)
 	{
 		matrixBuffer->Release();
@@ -86,18 +91,7 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[1] = 1.0f;
 	samplerDesc.BorderColor[2] = 1.0f;
 	samplerDesc.BorderColor[3] = 1.0f;
-	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow1);
-
-	// Sampler for shadow map sampling.
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.BorderColor[0] = 1.0f;
-	samplerDesc.BorderColor[1] = 1.0f;
-	samplerDesc.BorderColor[2] = 1.0f;
-	samplerDesc.BorderColor[3] = 1.0f;
-	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow2);
+	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow);
 
 	// Setup directional light buffer
 	dLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -188,6 +182,6 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
 	deviceContext->PSSetShaderResources(3, 1, &depthMap3);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
-	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow1);
+	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
 }
 

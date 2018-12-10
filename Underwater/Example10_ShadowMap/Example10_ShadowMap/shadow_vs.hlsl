@@ -1,13 +1,13 @@
 #define DIRCOUNT 2
-#define SPOTCOUNT 1
+#define POINTCOUNT 1
 
 cbuffer MatrixBuffer : register(b0)
 {
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-	matrix lightViewMatrix[DIRCOUNT + SPOTCOUNT];
-	matrix lightProjectionMatrix[DIRCOUNT + SPOTCOUNT];
+	matrix lightViewMatrix[DIRCOUNT + POINTCOUNT];
+	matrix lightProjectionMatrix[DIRCOUNT + POINTCOUNT];
 };
 
 struct InputType

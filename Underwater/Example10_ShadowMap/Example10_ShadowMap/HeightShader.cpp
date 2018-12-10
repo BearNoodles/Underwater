@@ -220,8 +220,6 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	pLightPtr->diffuse[0] = pLights[0].getDiffuseColour();
 	pLightPtr->position[0] = { pLights[0].getPosition().x, pLights[0].getPosition().y, pLights[0].getPosition().z, 0.0f };
 	pLightPtr->attenuation[0] = { 1.0f, 0.125f, 0.0f, 0.0f }; //Constant, Linear and Quadratic Factors and padding
-	//pLightPtr->direction[0] = { sLights[0].getDirection().x, sLights[0].getDirection().y, sLights[0].getDirection().z, 0 };
-	//pLightPtr->cone[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; //float4 for padding
 
 	deviceContext->Unmap(pLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &pLightBuffer);
