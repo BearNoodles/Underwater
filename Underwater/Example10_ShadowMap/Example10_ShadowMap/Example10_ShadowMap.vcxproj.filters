@@ -36,9 +36,6 @@
     <ClCompile Include="HeightShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SurfaceShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DepthHeightShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -71,13 +68,7 @@
     <ClInclude Include="UnderwaterShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FogShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeightShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SurfaceShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DepthHeightShader.h">

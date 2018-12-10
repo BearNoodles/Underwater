@@ -58,6 +58,7 @@ OutputType main(InputPatch<InputType, 4> patch, uint pointId : SV_OutputControlP
 	// Set the position for this control point as the output position.
 	output.position = patch[pointId].position;
 
+	// Set the texture coordinate for this control point as the output texture coordinate.
 	output.tex = patch[pointId].tex;
 
 	return output;

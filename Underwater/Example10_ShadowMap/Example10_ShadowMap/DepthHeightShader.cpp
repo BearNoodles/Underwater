@@ -26,11 +26,15 @@ DepthHeightShader::~DepthHeightShader()
 		matrixBuffer->Release();
 		matrixBuffer = 0;
 	}
+	
+	//Release tessellation buffer
 	if (tessBuffer)
 	{
 		tessBuffer->Release();
 		tessBuffer = 0;
 	}
+
+	//Release height buffer
 	if (heightBuffer)
 	{
 		heightBuffer->Release();
@@ -67,6 +71,7 @@ void DepthHeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
+	//Create matrix buffer
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
 	// Create a texture sampler state description.
@@ -83,6 +88,7 @@ void DepthHeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//Create sampler state
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 
 
@@ -92,6 +98,7 @@ void DepthHeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	tessBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	tessBufferDesc.MiscFlags = 0;
 	tessBufferDesc.StructureByteStride = 0;
+	//Create tessellation buffer
 	renderer->CreateBuffer(&tessBufferDesc, NULL, &tessBuffer);
 
 
@@ -102,6 +109,7 @@ void DepthHeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	heightBufferDesc.MiscFlags = 0;
 	heightBufferDesc.StructureByteStride = 0;
+	//Create wave buffer
 	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
 
 }
@@ -129,19 +137,18 @@ void DepthHeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->DSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	//Send tessellation values to Hull shader
 	deviceContext->Map(tessBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	tessPtr = (TessellationBufferType*)mappedResource.pData;
-
 	tessPtr->tessellationFactorE = tess;
 	tessPtr->tessellationFactorI = tess;
 	tessPtr->padding = { 0.0f,0.0f };
 	deviceContext->Unmap(tessBuffer, 0);
 	deviceContext->HSSetConstantBuffers(0, 1, &tessBuffer);
 
-
+	//Send wave data to Domain shader
 	deviceContext->Map(heightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	heightPtr = (HeightBufferType*)mappedResource.pData;
-
 	heightPtr->time = wave[0];
 	heightPtr->speed = wave[1];
 	heightPtr->height = wave[2];
@@ -149,7 +156,7 @@ void DepthHeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, 
 	deviceContext->Unmap(heightBuffer, 0);
 	deviceContext->DSSetConstantBuffers(1, 1, &heightBuffer);
 
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resource and sampler state in domain shader
 	deviceContext->DSSetShaderResources(0, 1, &heightTexture);
 	deviceContext->DSSetSamplers(0, 1, &sampleState);
 

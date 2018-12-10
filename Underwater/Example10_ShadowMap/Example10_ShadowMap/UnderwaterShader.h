@@ -8,6 +8,7 @@ using namespace DirectX;
 class UnderwaterShader : public BaseShader
 {
 private:
+	//Under water buffer type for passing in time
 	struct UnderwaterBufferType
 	{
 		float time;

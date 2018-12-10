@@ -15,6 +15,7 @@ protected:
 	void initBuffers(ID3D11Device* device);
 
 private:
+	//Number of quads in each row and column that make up the mesh
 	int quadCount;
 };
 

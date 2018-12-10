@@ -37,7 +37,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	waterShader = new UnderwaterShader(renderer->getDevice(), hwnd);
 	heightShader = new HeightShader(renderer->getDevice(), hwnd);
 	depthHeightShader = new DepthHeightShader(renderer->getDevice(), hwnd);
-	surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
+	//surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
 	billboardShader = new BillboardShader(renderer->getDevice(), hwnd);
 	depthFishShader = new DepthFishShader(renderer->getDevice(), hwnd);
 
@@ -58,6 +58,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	//Texture to be rendered to the ortho mesh
 	waterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+
 
 	//Initialise arrarys of each light type (directional and point)
 	dLights = new Light[DIRCOUNT]();
@@ -80,18 +81,18 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//White point light positioned at the spout of the teapot model.  Switch off as default as it doesnt cast shadows
 	pLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	pLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	pLights[0].setDirection(0.001f, -1.0f, 0.0f);
+	pLights[0].setDirection(0.0001f, -1.0f, 1.0f);
 	pLights[0].setPosition(30.0f, 30.0f, 50.0f);
 	pLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	//Variables so light directions can be changed (position for point light)
 	lightDir0 = new float[3]{ 1.0f, -0.5f, 0.0f };
-	lightDir1 = new float[3]{ -1.0f, -0.5f, 0.0f };
+	lightDir1 = new float[3]{ 0.0f, -0.5f, -1.0f };
 	pLightPos = new float[3]{ 30.0f, 30.0f, 50.0f };
 
 	//Variable for light colours
 	lightColour0 = new float[4]{ 1.0f, 0.0f, 0.0f, 1.0f };
-	lightColour1 = new float[4]{ 1.0f, 0.0f, 0.0f, 1.0f };
+	lightColour1 = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
 	pLightColour = new float[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
 
 	//Black and white light colours to set the point light as
@@ -101,9 +102,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//point light is off by default
 	pLightOn = false;
 
-	//Tesselation starts as 1 (no tesselation) and can be increased using the imgui menu
-	terrainTess = 1;
-	waterTess = 1;
+	//Tessellation starts as 1 (no tesselation) and can be increased using the imgui menu
+	terrainTess = 10;
+	waterTess = 10;
 
 	//Floats to controls the waves passed into shaders with height mapping
 
@@ -115,7 +116,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	wave[3] = 0.4f; //frequency
 
 	//Terrain wave
-	//terrain only need height value
+	//terrain only needs height value
 	noWave = new float[3];
 	noWave[0] = 0; //Time 
 	noWave[1] = 0; //Speed
@@ -127,7 +128,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	floorPos = { -50.0f, -30.0f, 0.0f };
 	waterPos = { -50.0f, -10.0f, 0.0f };
 	modelPos = { -30.0f, 10.0f, 105.0f };
-
+	
+	//Position camera to better starting position
+	camera->setPosition(camera->getPosition().x, camera->getPosition().y + 10, camera->getPosition().z);
 }
 
 
@@ -488,6 +491,7 @@ void App1::gui()
 	//Controls for the 1st directional light direction and colour
 	if (ImGui::CollapsingHeader("Directional Light 1"))
 	{
+
 		ImGui::SliderFloat("Directional Light X direction", &lightDir0[0], -1, 1);
 		ImGui::SliderFloat("Directional Light Y direction", &lightDir0[1], -1, 1);
 		ImGui::SliderFloat("Directional Light Z direction", &lightDir0[2], -1, 1);

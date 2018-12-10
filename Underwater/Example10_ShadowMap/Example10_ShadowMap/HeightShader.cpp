@@ -20,36 +20,49 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFil
 
 HeightShader::~HeightShader()
 {
+	//Release sample state
 	if (sampleState)
 	{
 		sampleState->Release();
 		sampleState = 0;
 	}
+
+	//Release matrix buffer
 	if (matrixBuffer)
 	{
 		matrixBuffer->Release();
 		matrixBuffer = 0;
 	}
+
+	//Release layout
 	if (layout)
 	{
 		layout->Release();
 		layout = 0;
 	}
+
+	//Release directional light buffer
 	if (dLightBuffer)
 	{
 		dLightBuffer->Release();
 		dLightBuffer = 0;
 	}
+
+	//Release point light buffer
 	if (pLightBuffer)
 	{
 		pLightBuffer->Release();
 		pLightBuffer = 0;
 	}
+
+	//Release tessellation buffer
 	if (tessBuffer)
 	{
 		tessBuffer->Release();
 		tessBuffer = 0;
 	}
+
+	//Realease height buffer
 	if (heightBuffer)
 	{
 		heightBuffer->Release();
@@ -81,6 +94,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
+	//Create matrix buffer
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
 	// Create a texture sampler state description.
@@ -97,6 +111,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//Create sampler state
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 
 	// Sampler for shadow map sampling.
@@ -108,32 +123,37 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[1] = 1.0f;
 	samplerDesc.BorderColor[2] = 1.0f;
 	samplerDesc.BorderColor[3] = 1.0f;
+	//Create shadow sampler state
 	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow);
 
+	//Setup tessellation buffer
 	tessBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	tessBufferDesc.ByteWidth = sizeof(TessellationBufferType);
 	tessBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	tessBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	tessBufferDesc.MiscFlags = 0;
 	tessBufferDesc.StructureByteStride = 0;
+	//Create tessellation buffer
 	renderer->CreateBuffer(&tessBufferDesc, NULL, &tessBuffer);
 
-	// Setup light buffer
+	// Setup directional light buffer
 	dLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	dLightBufferDesc.ByteWidth = sizeof(DirLightBufferType);
 	dLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	dLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	dLightBufferDesc.MiscFlags = 0;
 	dLightBufferDesc.StructureByteStride = 0;
+	//Create directional light buffer
 	renderer->CreateBuffer(&dLightBufferDesc, NULL, &dLightBuffer);
 
-	// Setup light buffer
+	// Setup point light buffer
 	pLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	pLightBufferDesc.ByteWidth = sizeof(PointLightBufferType);
 	pLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	pLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	pLightBufferDesc.MiscFlags = 0;
 	pLightBufferDesc.StructureByteStride = 0;
+	//Create point light buffer
 	renderer->CreateBuffer(&pLightBufferDesc, NULL, &pLightBuffer);
 
 	// Setup wave buffer
@@ -143,6 +163,7 @@ void HeightShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	heightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	heightBufferDesc.MiscFlags = 0;
 	heightBufferDesc.StructureByteStride = 0;
+	//Create wave buffer
 	renderer->CreateBuffer(&heightBufferDesc, NULL, &heightBuffer);
 
 }
@@ -183,17 +204,16 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->DSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	//Send tessellation values to the hull shader
 	deviceContext->Map(tessBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	tessPtr = (TessellationBufferType*)mappedResource.pData;
-
 	tessPtr->tessellationFactorE = tess;
 	tessPtr->tessellationFactorI = tess;
 	tessPtr->padding = { 0.0f,0.0f };
 	deviceContext->Unmap(tessBuffer, 0);
 	deviceContext->HSSetConstantBuffers(0, 1, &tessBuffer);
 
-	//Additional
-	// Send light data to pixel shader
+	// Send directional light data to pixel shader
 	deviceContext->Map(dLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dLightPtr = (DirLightBufferType*)mappedResource.pData;
 
@@ -206,28 +226,24 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dLightPtr->ambient[1] = dLights[1].getAmbientColour();
 	dLightPtr->diffuse[1] = dLights[1].getDiffuseColour();
 	dLightPtr->direction[1] = { dLights[1].getDirection().x, dLights[1].getDirection().y, dLights[1].getDirection().z, 0 };
-	//dlightPtr->padding[1] = 0;
 	deviceContext->Unmap(dLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &dLightBuffer);
 
 
 
-	//point light
+	//Sen point light data to the pixel shader
 	deviceContext->Map(pLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	pLightPtr = (PointLightBufferType*)mappedResource.pData;
-
 	pLightPtr->ambient[0] = pLights[0].getAmbientColour();
 	pLightPtr->diffuse[0] = pLights[0].getDiffuseColour();
 	pLightPtr->position[0] = { pLights[0].getPosition().x, pLights[0].getPosition().y, pLights[0].getPosition().z, 0.0f };
 	pLightPtr->attenuation[0] = { 1.0f, 0.125f, 0.0f, 0.0f }; //Constant, Linear and Quadratic Factors and padding
-
 	deviceContext->Unmap(pLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &pLightBuffer);
 
-
+	//Send wave values to the domain shader
 	deviceContext->Map(heightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	heightPtr = (HeightBufferType*)mappedResource.pData;
-
 	heightPtr->time = wave[0];
 	heightPtr->speed = wave[1];
 	heightPtr->height = wave[2];
@@ -235,7 +251,7 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->Unmap(heightBuffer, 0);
 	deviceContext->DSSetConstantBuffers(1, 1, &heightBuffer);
 
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resources and sample states in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &depthMap);
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
@@ -243,7 +259,7 @@ void HeightShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
 
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resources and sample state in the domain shader.
 	deviceContext->DSSetShaderResources(0, 1, &heightTexture);
 	deviceContext->DSSetShaderResources(1, 1, &normalTexture);
 	deviceContext->DSSetSamplers(0, 1, &sampleState);

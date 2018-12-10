@@ -44,21 +44,27 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	float2 texPos;
 	OutputType output;
 
+	//Get new vertex position from the patches created by the hull shader
 	float3 v1 = lerp(patch[0].position, patch[1].position, uvwCoord.y);
 	float3 v2 = lerp(patch[3].position, patch[2].position, uvwCoord.y);
 	vertexPosition = lerp(v1, v2, uvwCoord.x);
 
+	//Get new texture coordinates from these patches
 	float2 t1 = lerp(patch[0].tex, patch[1].tex, uvwCoord.y);
 	float2 t2 = lerp(patch[3].tex, patch[2].tex, uvwCoord.y);
 	texPos = lerp(t1, t2, uvwCoord.x);
 
+	//Update the texture x corrdinate to move with time
+	//Must be the same equation used in the height_ds shader file
 	float2 movingTex;
 	movingTex.x = texPos.x + (time * speed / 100);
 	movingTex.y = texPos.y;
 
+	//Sample the height map
 	float4 textureColour;
 	textureColour = texture1.SampleLevel(sampler1, movingTex, 0);
 
+	//Increase the y position of the vertex based on the first colour value of the sampled texture
 	vertexPosition.y += textureColour.r * height;
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.

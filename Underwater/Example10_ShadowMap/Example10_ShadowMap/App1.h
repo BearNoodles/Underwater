@@ -64,6 +64,7 @@ private:
 	XMFLOAT3 waterPos;
 	XMFLOAT3 modelPos;
 
+
 	//Pointer for arrays of lights and their directions/position
 	Light* dLights;
 	Light* pLights;

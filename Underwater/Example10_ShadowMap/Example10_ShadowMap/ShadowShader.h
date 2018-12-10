@@ -15,6 +15,7 @@ using namespace DirectX;
 class ShadowShader : public BaseShader
 {
 private:
+	//New matrix buffer type with light matrices
 	struct MatrixBufferType
 	{
 		XMMATRIX world;
@@ -24,13 +25,15 @@ private:
 		XMMATRIX lightProjection[DIRCOUNT + POINTCOUNT];
 	};
 
+	//Directional light buffer type
 	struct DirLightBufferType
 	{
 		XMFLOAT4 ambient[DIRCOUNT];
 		XMFLOAT4 diffuse[DIRCOUNT];
 		XMFLOAT4 direction[DIRCOUNT];
-		//float padding;
 	};
+
+	//Point light buffer type
 	struct PointLightBufferType
 	{
 		XMFLOAT4 ambient[POINTCOUNT];

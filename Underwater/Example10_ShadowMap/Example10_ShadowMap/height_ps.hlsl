@@ -6,6 +6,7 @@ Texture2D depthMapTexture2 : register(t3);
 SamplerState diffuseSampler  : register(s0);
 SamplerState shadowSampler : register(s1);
 
+//Number of each type of light
 #define DIRCOUNT 2
 #define POINTCOUNT 1
 
@@ -43,6 +44,7 @@ float4 calculateLighting(float3 lightDirection, float3 normal, float4 diffuse)
 	return colour;
 }
 
+//Calculate attenuation based on the light position and the pixel/vertex world position
 float calculateAttenuation(float constant, float lin, float quadratic, float3 lightPos, float3 worldPos)
 {
 	float dist = distance(lightPos, worldPos);
@@ -58,23 +60,30 @@ float4 main(InputType input) : SV_TARGET
 	float lightDepthValue0;
 	float lightDepthValue1;
 	float lightDepthValue2;
+
+	//Shadow map bias to avoid shadow acne. 
 	float shadowMapBias = 0.006f;
+
+	//Initialise light colours as black
 	float4 colour0 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour1 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour2 = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	float4 colour;
+
+	//Sample the texture
 	float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
 
 
-	
+	//Set attenuation values for each light from values passed in through buffer
 	float pConstantFactor[POINTCOUNT] = { pAttenuation[0].x };
 	float pLinearFactor[POINTCOUNT] = { pAttenuation[0].y };
 	float pQuadraticFactor[POINTCOUNT] = { pAttenuation[0].z };
 
+	//Calculate attenuation and light vector
 	float pAtten[POINTCOUNT] = { calculateAttenuation(pConstantFactor[0], pLinearFactor[0], pQuadraticFactor[0], pPosition[0], input.worldPosition) };
 	float3 pLightVector[POINTCOUNT] = { normalize(pPosition[0] - input.worldPosition)};
 	
-	// Calculate the projected texture coordinates.
+	// Calculate the projected texture coordinates for each light
 	float2 pTexCoord0 = input.lightViewPos0.xy / input.lightViewPos0.w;
 	pTexCoord0 *= float2(0.5f, -0.5f);
 	pTexCoord0 += float2(0.5f, 0.5f);
@@ -87,10 +96,10 @@ float4 main(InputType input) : SV_TARGET
 	pTexCoord2 *= float2(0.5f, -0.5f);
 	pTexCoord2 += float2(0.5f, 0.5f);
 	
-	// Determine if the projected coordinates are in the 0 to 1 range.  If not don't do lighting.
+	// Determine if the projected coordinates for each light are in the 0 to 1 range.  If none are don't do lighting.
 	if ((pTexCoord0.x < 0.0f || pTexCoord0.x > 1.0f || pTexCoord0.y < 0.0f || pTexCoord0.y > 1.0f)
-		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f))
-		//&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
+		&& (pTexCoord1.x < 0.0f || pTexCoord1.x > 1.0f || pTexCoord1.y < 0.0f || pTexCoord1.y > 1.0f)
+		&& (pTexCoord2.x < 0.0f || pTexCoord2.x > 1.0f || pTexCoord2.y < 0.0f || pTexCoord2.y > 1.0f))
 	{
 		return textureColour;
 	}
@@ -107,6 +116,7 @@ float4 main(InputType input) : SV_TARGET
 		colour0 = calculateLighting(-dDirection[0], input.normal, dDiffuse[0]);
 	}
 	
+	//Add ambient and saturate to keep values below 1
 	colour0 = saturate(colour0 + dAmbient[0]);
 	
 	
@@ -121,7 +131,8 @@ float4 main(InputType input) : SV_TARGET
 	{
 		colour1 = calculateLighting(-dDirection[1], input.normal, dDiffuse[1]);
 	}
-	
+
+	//Add ambient and saturate to keep values below 1
 	colour1 = saturate(colour1 + dAmbient[1]);
 	
 	// Sample the shadow map (get depth of geometry)
@@ -131,14 +142,17 @@ float4 main(InputType input) : SV_TARGET
 	lightDepthValue2 -= shadowMapBias;
 
 	// Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
-	//if (lightDepthValue2 < depthValue2)
-	//{
+	if (lightDepthValue2 < depthValue2)
+	{
 		colour2 = calculateLighting(-pLightVector[0], input.normal, pDiffuse[0]) *pAtten[0];
-	//}
-	
+	}
+
+	//Add ambient and saturate to keep values below 1
 	colour2 = saturate(colour2 + pAmbient[0]);
 	
+	//Add all colours together and saturate again
 	colour = saturate(colour0 + colour1 + colour2);
 	
+	//Multiply by texture colour
 	return saturate(colour * textureColour);
 }

@@ -13,15 +13,17 @@ using namespace DirectX;
 class HeightShader : public BaseShader
 {
 private:
+	//Create new matric buffer type with matrices for the lights
 	struct MatrixBufferType
 	{
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
-		XMMATRIX lightView[DIRCOUNT];
-		XMMATRIX lightProjection[DIRCOUNT];
+		XMMATRIX lightView[DIRCOUNT + POINTCOUNT];
+		XMMATRIX lightProjection[DIRCOUNT + POINTCOUNT];
 	};
 
+	//Create tessellation buffer type
 	struct TessellationBufferType
 	{
 		float tessellationFactorE;
@@ -29,6 +31,7 @@ private:
 		XMFLOAT2 padding;
 	};
 
+	//Create directional light buffer type
 	struct DirLightBufferType
 	{
 		XMFLOAT4 ambient[DIRCOUNT];
@@ -36,6 +39,8 @@ private:
 		XMFLOAT4 direction[DIRCOUNT];
 		//float padding;
 	};
+
+	//Create point light buffer type
 	struct PointLightBufferType
 	{
 		XMFLOAT4 ambient[POINTCOUNT];
@@ -44,6 +49,7 @@ private:
 		XMFLOAT4 attenuation[POINTCOUNT];
 	};
 
+	//Create height buffer type
 	struct HeightBufferType
 	{
 		float time;

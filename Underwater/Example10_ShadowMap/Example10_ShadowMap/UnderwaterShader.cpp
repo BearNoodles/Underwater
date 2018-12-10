@@ -29,7 +29,7 @@ UnderwaterShader::~UnderwaterShader()
 		layout = 0;
 	}
 
-	// Release the constant buffer.
+	// Release the water buffer.
 	if (waterBuffer)
 	{
 		waterBuffer->Release();
@@ -59,6 +59,7 @@ void UnderwaterShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
+	//Create matrix buffer
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
 	// Create a texture sampler state description.
@@ -71,6 +72,7 @@ void UnderwaterShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//Create sample state
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 
 	// Setup buffer
@@ -82,6 +84,7 @@ void UnderwaterShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	waterBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	waterBufferDesc.MiscFlags = 0;
 	waterBufferDesc.StructureByteStride = 0;
+	//Create water buffer
 	renderer->CreateBuffer(&waterBufferDesc, NULL, &waterBuffer);
 
 }
@@ -108,7 +111,6 @@ void UnderwaterShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	//Additional
 	// Send data to pixel shader
 	UnderwaterBufferType* waterPtr;
 	deviceContext->Map(waterBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -119,7 +121,7 @@ void UnderwaterShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->PSSetConstantBuffers(0, 1, &waterBuffer);
 
 
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resource and sample state in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }

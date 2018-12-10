@@ -10,31 +10,42 @@ ShadowShader::ShadowShader(ID3D11Device* device, HWND hwnd) : BaseShader(device,
 
 ShadowShader::~ShadowShader()
 {
+	//Release sample state
 	if (sampleState)
 	{
 		sampleState->Release();
 		sampleState = 0;
 	}
+
+	//Release shadow sample state
 	if (sampleStateShadow)
 	{
 		sampleStateShadow->Release();
 		sampleStateShadow = 0;
 	}
+
+	//Release matrix buffer
 	if (matrixBuffer)
 	{
 		matrixBuffer->Release();
 		matrixBuffer = 0;
 	}
+
+	//Release layout
 	if (layout)
 	{
 		layout->Release();
 		layout = 0;
 	}
+
+	//Release directional light buffer
 	if (dLightBuffer)
 	{
 		dLightBuffer->Release();
 		dLightBuffer = 0;
 	}
+
+	//Release point light buffer
 	if (pLightBuffer)
 	{
 		pLightBuffer->Release();
@@ -64,9 +75,10 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
+	//Create matrix buffer
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
-	// Create a texture sampler state description.
+	// Setup texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
@@ -80,9 +92,10 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//Create sample state
 	renderer->CreateSamplerState(&samplerDesc, &sampleState);
 
-	// Sampler for shadow map sampling.
+	// Setup sampler for shadow map sampling.
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -91,6 +104,7 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[1] = 1.0f;
 	samplerDesc.BorderColor[2] = 1.0f;
 	samplerDesc.BorderColor[3] = 1.0f;
+	//Create shadow sample state
 	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow);
 
 	// Setup directional light buffer
@@ -100,15 +114,17 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	dLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	dLightBufferDesc.MiscFlags = 0;
 	dLightBufferDesc.StructureByteStride = 0;
+	//Create directional light buffer
 	renderer->CreateBuffer(&dLightBufferDesc, NULL, &dLightBuffer);
 
-	// Setup spot light buffer
+	// Setup create light buffer
 	pLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	pLightBufferDesc.ByteWidth = sizeof(PointLightBufferType);
 	pLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	pLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	pLightBufferDesc.MiscFlags = 0;
 	pLightBufferDesc.StructureByteStride = 0;
+	//Create point light buffer
 	renderer->CreateBuffer(&pLightBufferDesc, NULL, &pLightBuffer);
 
 }
@@ -145,11 +161,9 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
-	//Additional
-	// Send light data to pixel shader
+	// Send directional light data to pixel shader
 	deviceContext->Map(dLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dLightPtr = (DirLightBufferType*)mappedResource.pData;
-
 	//1st Directional light
 	dLightPtr->ambient[0] = dLights[0].getAmbientColour();
 	dLightPtr->diffuse[0] = dLights[0].getDiffuseColour();
@@ -164,19 +178,17 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	deviceContext->PSSetConstantBuffers(0, 1, &dLightBuffer);
 
 
-	//spot light
+	//Point light
 	deviceContext->Map(pLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	pLightPtr = (PointLightBufferType*)mappedResource.pData;
-
 	pLightPtr->ambient[0] = pLights[0].getAmbientColour();
 	pLightPtr->diffuse[0] = pLights[0].getDiffuseColour();
 	pLightPtr->position[0] = { pLights[0].getPosition().x, pLights[0].getPosition().y, pLights[0].getPosition().z, 0.0f };
 	pLightPtr->attenuation[0] = { 0.1f, 0.005f, 0.0f, 1000.0f }; //Constant, Linear and Quadratic Factors and padding
-	
 	deviceContext->Unmap(pLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &pLightBuffer);
 
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resources and sample states in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &depthMap);
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);

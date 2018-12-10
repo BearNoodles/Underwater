@@ -17,9 +17,12 @@ public:
 protected:
 	void initBuffers(ID3D11Device* device);
 
+	//Number of quads in each row column and layer
 	int quadRows;
 	int quadCols;
 	int quadLayers;
+
+	//Gap between each control points
 	float quadGap;
 
 };

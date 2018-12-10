@@ -10,6 +10,7 @@ using namespace DirectX;
 class DepthHeightShader : public BaseShader
 {
 private:
+	//Buffer to hold values for tessellation
 	struct TessellationBufferType
 	{
 		float tessellationFactorE;
@@ -17,6 +18,7 @@ private:
 		XMFLOAT2 padding;
 	};
 
+	//Buffer to hold vaules control the waves on height maps
 	struct HeightBufferType
 	{
 		float time;

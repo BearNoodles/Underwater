@@ -38,7 +38,7 @@ struct OutputType
 [maxvertexcount(4)]
 void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 {
-	float speed = 5;
+	//float speed = 5;
 	float3 wPosition = mul(input[0].position, worldMatrix);
 	float3 cameraVec = cameraPos - wPosition;
 	cameraVec = normalize(cameraVec);

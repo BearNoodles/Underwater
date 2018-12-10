@@ -132,7 +132,6 @@
     <ClCompile Include="DepthHeightShader.cpp" />
     <ClCompile Include="HeightShader.cpp" />
     <ClCompile Include="PointCubeMesh.cpp" />
-    <ClCompile Include="SurfaceShader.cpp" />
     <ClCompile Include="TessellatedQuad.cpp" />
     <ClCompile Include="UnderwaterShader.cpp" />
     <ClCompile Include="DepthShader.cpp" />
@@ -145,10 +144,8 @@
     <ClInclude Include="BillboardShader.h" />
     <ClInclude Include="DepthFishShader.h" />
     <ClInclude Include="DepthHeightShader.h" />
-    <ClInclude Include="FogShader.h" />
     <ClInclude Include="HeightShader.h" />
     <ClInclude Include="PointCubeMesh.h" />
-    <ClInclude Include="SurfaceShader.h" />
     <ClInclude Include="TessellatedQuad.h" />
     <ClInclude Include="UnderwaterShader.h" />
     <ClInclude Include="DepthShader.h" />
