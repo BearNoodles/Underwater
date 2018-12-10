@@ -20,12 +20,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	fishMesh = new PointCubeMesh(renderer->getDevice(), renderer->getDeviceContext());
 	model = new Model(renderer->getDevice(), renderer->getDeviceContext(), "res/teapot.obj");
 
-	textureMgr->loadTexture("brick", L"res/brick1.dds");
+	textureMgr->loadTexture("brick", L"res/rock.jpg");
 	textureMgr->loadTexture("terrainHeight", L"res/terrainHeight.png");
 	textureMgr->loadTexture("waveHeight", L"res/waveHeight.png");
 	textureMgr->loadTexture("terrainNormal", L"res/terrainNormal.png");
 	textureMgr->loadTexture("waveNormal", L"res/waveNormal.png");
 	textureMgr->loadTexture("water", L"res/blue2.png");
+	textureMgr->loadTexture("fish", L"res/jelly.png");
 
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
@@ -35,6 +36,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	depthHeightShader = new DepthHeightShader(renderer->getDevice(), hwnd);
 	surfaceShader = new SurfaceShader(renderer->getDevice(), hwnd);
 	billboardShader = new BillboardShader(renderer->getDevice(), hwnd);
+	depthFishShader = new DepthFishShader(renderer->getDevice(), hwnd);
 
 	ortho = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight, 0, 0);
 	ortho2 = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth / 4, screenHeight / 4, -screenWidth / 2.7f, screenHeight / 2.7f);
@@ -54,29 +56,29 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	waterTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 
 	dLights = new Light[DIRCOUNT]();
-	pLights = new Light[SPOTCOUNT]();
+	pLights = new Light[POINTCOUNT]();
 
 	dLights[0].setAmbientColour(0.2f, 0.2f, 0.2f, 1.0f);
-	dLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	dLights[0].setDirection(-1.0f, 1.0f, 0.0f);
+	dLights[0].setDiffuseColour(1.0f, 0.0f, 0.0f, 1.0f);
+	dLights[0].setDirection( 1.0f, -0.5f, 0.0f );
 	dLights[0].setPosition(0.0f, 40.0f, 50.0f);
 	dLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	dLights[1].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	dLights[1].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);// shadows on hills?
-	dLights[1].setDirection(1.0f, 1.0f, 0.0f);
-	dLights[1].setPosition(0.0f, 40.0f, 0.0f);
+	dLights[1].setDiffuseColour(0.0f, 0.0f, 1.0f, 1.0f);
+	dLights[1].setDirection(-1.0f, -0.5f, 0.0f);
+	dLights[1].setPosition(0.0f, 40.0f, 50.0f);
 	dLights[1].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	pLights[0].setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	pLights[0].setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	pLights[0].setDirection(0.001f, -1.0f, 0.0f);
-	pLights[0].setPosition(-30.0f, 60.0f, 60.0f);
+	pLights[0].setPosition(-60.0f, 0.0f, 60.0f);
 	pLights[0].generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
-	lightDir0 = new float[3]{ 1.0f, 1.0f, 0.0f };
-	lightDir1 = new float[3]{ -1.0f, 1.0f, 0.0f };
-	pLightPos = new float[3]{ -30.0f, 60.0f, 60.0f };
+	lightDir0 = new float[3]{ 1.0f, -0.5f, 0.0f };
+	lightDir1 = new float[3]{ -1.0f, -0.5f, 0.0f };
+	pLightPos = new float[3]{ -60.0f, 0.0f, 60.0f };
 
 	terrainTess = 1;
 	waterTess = 1;
@@ -99,18 +101,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	fishWave[2] = 5.0f;
 	fishWave[3] = 1.0f;
 
-	fog = new float[1];
-	fog[0] = 0;
-	fog[1] = 100;
-	screenW = screenWidth;
-	screenH = screenHeight;
-
-
 	modelRot = 0;
-	fishRot = 0;
 	fishPos = {-50.0f, -30.0f, 0.0f};
 	waterPos = { -50.0f, -10.0f, 0.0f };
-	isUnderwater = false;
+	//isUnderwater = false;
 
 }
 
@@ -152,13 +146,12 @@ bool App1::render()
 	dLights[0].setDirection(lightDir0[0], lightDir0[1], lightDir0[2]);
 	dLights[1].setDirection(lightDir1[0], lightDir1[1], lightDir1[2]);
 	pLights[0].setPosition(pLightPos[0], pLightPos[1], pLightPos[2]);
-	fishRot = currentTime;
 
 	// Perform depth pass
 	depthPass1();
 	depthPass2();
 	depthPass3();
-	depthPass4();
+	//depthPass4();
 	// Render scene
 	finalPass();
 	finalPass2();
@@ -197,6 +190,13 @@ void App1::depthPass1()
 	//Get depth for 1st light
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0);
 	depthShader->render(renderer->getDeviceContext(), model->getIndexCount());
+
+	worldMatrix = positionFish();
+	fishMesh->sendData(renderer->getDeviceContext());
+
+	//Get depth for 1st light
+	depthFishShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix0, lightProjectionMatrix0);
+	depthFishShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
 
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
@@ -237,6 +237,13 @@ void App1::depthPass2()
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1);
 	depthShader->render(renderer->getDeviceContext(), model->getIndexCount());
 
+	worldMatrix = positionFish();
+	fishMesh->sendData(renderer->getDeviceContext());
+
+	//Get depth for 1st light
+	depthFishShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix1, lightProjectionMatrix1);
+	depthFishShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
+
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
@@ -276,6 +283,14 @@ void App1::depthPass3()
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
 	depthShader->render(renderer->getDeviceContext(), model->getIndexCount());
 
+
+	worldMatrix = positionFish();
+	fishMesh->sendData(renderer->getDeviceContext());
+
+	//Get depth for 1st light
+	depthFishShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, lightViewMatrix2, lightProjectionMatrix2);
+	depthFishShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
+
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
@@ -312,6 +327,14 @@ void App1::depthPass4()
 
 	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
 	depthShader->render(renderer->getDeviceContext(), model->getIndexCount());
+
+
+	worldMatrix = positionFish();
+	fishMesh->sendData(renderer->getDeviceContext());
+
+	//Get depth for 1st light
+	depthFishShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
+	depthFishShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
 
 	// Set back buffer as render target and reset view port.
 	renderer->setBackBufferRenderTarget();
@@ -364,7 +387,7 @@ void App1::finalPass()
 	worldMatrix = positionFish();
 	fishMesh->sendData(renderer->getDeviceContext());
 
-	billboardShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), camera->getPosition(), fishWave);
+	billboardShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("fish"),shadowMap->getShaderResourceView(), shadowMap2->getShaderResourceView(), shadowMap3->getShaderResourceView(), dLights, pLights, camera->getPosition());
 	billboardShader->render(renderer->getDeviceContext(), fishMesh->getIndexCount());
 	
 	renderer->setWireframeMode(false);
@@ -486,39 +509,52 @@ void App1::gui()
 	ImGui::SliderFloat("TesselationW", &waterTess, 1.0f, 32.0f);
 	ImGui::SliderFloat("TesselationT", &terrainTess, 1.0f, 32.0f);
 
-	ImGui::SliderFloat("LightDir0X", &lightDir0[0], -1, 1);
-	ImGui::SliderFloat("LightDir0Y", &lightDir0[1], -1, 1);
-	ImGui::SliderFloat("LightDir0Z", &lightDir0[2], -1, 1);
-	//Dont let it do the zero thing
-	if (lightDir0[0] == 0)
+	if (ImGui::CollapsingHeader("Directional Light 1"))
 	{
-		lightDir0[0] = 0.0001f;
+		ImGui::SliderFloat("LightDir0X", &lightDir0[0], -1, 1);
+		ImGui::SliderFloat("LightDir0Y", &lightDir0[1], -1, 1);
+		ImGui::SliderFloat("LightDir0Z", &lightDir0[2], -1, 1);
+		//Dont let it do the zero thing
+		if (lightDir0[0] == 0)
+		{
+			lightDir0[0] = 0.0001f;
+		}
 	}
-
-
-	ImGui::SliderFloat("LightDir1X", &lightDir1[0], -1, 1);
-	ImGui::SliderFloat("LightDir1Y", &lightDir1[1], -1, 1);
-	ImGui::SliderFloat("LightDir1Z", &lightDir1[2], -1, 1);
-	//Dont let it do the zero thing
-	if (lightDir1[0] == 0)
-	{
-		lightDir1[0] = 0.0001f;
-	}
-
-
-	//Spotlight Direction
-	ImGui::SliderFloat("PointPosX", &pLightPos[0], -60, 60);
-	ImGui::SliderFloat("PointPosY", &pLightPos[1], 0, 60);
-	ImGui::SliderFloat("PointPosZ", &pLightPos[2], -60, 60); 
 
 	
-	dLights[0].setPosition(-lightDir0[0] * 40, -lightDir0[1] * 40, -lightDir0[2] * 40 + 50);
-	dLights[1].setPosition(-lightDir1[0] * 40, -lightDir1[1] * 40, -lightDir1[2] * 40);
 
-	ImGui::SliderFloat("Teapot rotation", &modelRot, -PI, PI);
-	ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
-	ImGui::SliderFloat("Wave Height", &wave[2], 0, 100);
-	ImGui::SliderFloat("Wave Frequency", &wave[3], 0, 2);
+	if (ImGui::CollapsingHeader("Directional Light 2"))
+	{
+		ImGui::SliderFloat("LightDir1X", &lightDir1[0], -1, 1);
+		ImGui::SliderFloat("LightDir1Y", &lightDir1[1], -1, 1);
+		ImGui::SliderFloat("LightDir1Z", &lightDir1[2], -1, 1);
+		//Dont let it do the zero thing
+		if (lightDir1[0] == 0)
+		{
+			lightDir1[0] = 0.0001f;
+		}
+	}
+
+
+	if (ImGui::CollapsingHeader("Point Light"))
+	{
+		//PointLight Position
+		ImGui::SliderFloat("PointPosX", &pLightPos[0], -60, 60);
+		ImGui::SliderFloat("PointPosY", &pLightPos[1], 0, 60);
+		ImGui::SliderFloat("PointPosZ", &pLightPos[2], -60, 60);
+	}
+	
+	dLights[0].setPosition(-lightDir0[0] * 40, -lightDir0[1] * 40, -lightDir0[2] * 40 + 50);
+	dLights[1].setPosition(-lightDir1[0] * 40, -lightDir1[1] * 40, -lightDir1[2] * 40 + 50);
+
+	//ImGui::SliderFloat("Teapot rotation", &modelRot, -PI, PI);
+
+	if (ImGui::CollapsingHeader("Wave Control"))
+	{
+		ImGui::SliderFloat("Wave Speed", &wave[1], 0, 10);
+		ImGui::SliderFloat("Wave Height", &wave[2], 0, 100);
+		ImGui::SliderFloat("Wave Frequency", &wave[3], 0, 2);
+	}
 
 	// Render UI
 	ImGui::Render();

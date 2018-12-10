@@ -132,10 +132,10 @@ float4 main(InputType input) : SV_TARGET
 	lightDepthValue2 -= shadowMapBias;
 
 	// Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
-	if (lightDepthValue2 < depthValue2)
-	{
-		colour2 = calculateLighting(-pLightVector[0], input.normal, pDiffuse[0]);// *pAtten[0];
-	}
+	//if (lightDepthValue2 < depthValue2)
+	//{
+		colour2 = calculateLighting(-pLightVector[0], input.normal, pDiffuse[0]) *pAtten[0];
+	//}
 	
 	colour2 = saturate(colour2 + pAmbient[0]);
 	

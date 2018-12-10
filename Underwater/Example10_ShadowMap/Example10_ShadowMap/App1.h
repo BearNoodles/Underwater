@@ -14,6 +14,7 @@
 #include "depthheightshader.h"
 #include "surfaceShader.h"
 #include "BillboardShader.h"
+#include "DepthFishShader.h"
 #include "TessellatedQuad.h"
 #include "PointCubeMesh.h"
 
@@ -71,6 +72,7 @@ private:
 	DepthHeightShader* depthHeightShader;
 	SurfaceShader* surfaceShader;
 	BillboardShader* billboardShader;
+	DepthFishShader* depthFishShader;
 
 
 	RenderTexture* shadowMap;

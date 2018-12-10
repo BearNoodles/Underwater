@@ -57,7 +57,7 @@ public:
 	HeightShader(ID3D11Device* device, HWND hwnd);
 	~HeightShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, ID3D11ShaderResourceView*depthMap3, Light* dLights, Light* sLights, float* wave, float tess);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* heightTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, ID3D11ShaderResourceView*depthMap3, Light* dLights, Light* pLights, float* wave, float tess);
 
 private:
 	void initShader(WCHAR* vsFilename, WCHAR* psFilename);
@@ -66,7 +66,7 @@ private:
 private:
 	ID3D11Buffer * matrixBuffer;
 	ID3D11SamplerState* sampleState;
-	ID3D11SamplerState* sampleStateShadow1;
+	ID3D11SamplerState* sampleStateShadow;
 	ID3D11Buffer* tessBuffer;
 	ID3D11Buffer* dLightBuffer;
 	ID3D11Buffer* pLightBuffer;

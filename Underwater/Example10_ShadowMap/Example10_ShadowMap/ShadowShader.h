@@ -4,7 +4,7 @@
 #define _SHADOWSHADER_H_
 
 #define DIRCOUNT 2
-#define SPOTCOUNT 1
+#define POINTCOUNT 1
 
 #include "DXF.h"
 
@@ -20,8 +20,8 @@ private:
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
-		XMMATRIX lightView[DIRCOUNT + SPOTCOUNT];
-		XMMATRIX lightProjection[DIRCOUNT + SPOTCOUNT];
+		XMMATRIX lightView[DIRCOUNT + POINTCOUNT];
+		XMMATRIX lightProjection[DIRCOUNT + POINTCOUNT];
 	};
 
 	struct DirLightBufferType
@@ -31,14 +31,12 @@ private:
 		XMFLOAT4 direction[DIRCOUNT];
 		//float padding;
 	};
-	struct SpotLightBufferType
+	struct PointLightBufferType
 	{
-		XMFLOAT4 ambient[SPOTCOUNT];
-		XMFLOAT4 diffuse[SPOTCOUNT];
-		XMFLOAT4 position[SPOTCOUNT];
-		XMFLOAT4 direction[SPOTCOUNT];
-		XMFLOAT4 attenuation[SPOTCOUNT];//4th value is max range of spotlight
-		XMFLOAT4 cone[SPOTCOUNT];
+		XMFLOAT4 ambient[POINTCOUNT];
+		XMFLOAT4 diffuse[POINTCOUNT];
+		XMFLOAT4 position[POINTCOUNT];
+		XMFLOAT4 attenuation[POINTCOUNT];
 	};
 
 public:
@@ -46,7 +44,7 @@ public:
 	ShadowShader(ID3D11Device* device, HWND hwnd);
 	~ShadowShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, ID3D11ShaderResourceView*depthMap3, Light* dLights, Light* sLights);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView*depthMap, ID3D11ShaderResourceView*depthMap2, ID3D11ShaderResourceView*depthMap3, Light* dLights, Light* pLights);
 
 private:
 	void initShader(WCHAR*, WCHAR*);
@@ -57,7 +55,7 @@ private:
 	ID3D11SamplerState* sampleStateShadow1;
 	ID3D11SamplerState* sampleStateShadow2;
 	ID3D11Buffer* dLightBuffer;
-	ID3D11Buffer* sLightBuffer;
+	ID3D11Buffer* pLightBuffer;
 };
 
 #endif

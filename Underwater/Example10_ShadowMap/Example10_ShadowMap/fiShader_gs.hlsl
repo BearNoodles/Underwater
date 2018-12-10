@@ -1,9 +1,14 @@
 
+#define DIRCOUNT 2
+#define POINTCOUNT 1
+
 cbuffer MatrixBuffer : register(b0)
 {
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
+	matrix lightViewMatrix[DIRCOUNT + POINTCOUNT];
+	matrix lightProjectionMatrix[DIRCOUNT + POINTCOUNT];
 };
 
 cbuffer CameraBuffer : register(b1)
@@ -11,19 +16,11 @@ cbuffer CameraBuffer : register(b1)
 	float3 cameraPos;
 	float padding;
 }
-cbuffer WaveBuffer : register(b2)
-{
-	float time;
-	float speed;
-	float height;
-	float frequency;
-};
 
 struct InputType
 {
 	float4 position : POSITION;
 	float2 tex : TEXCOORD0;
-	float3 normal : NORMAL;
 };
 
 struct OutputType
@@ -31,7 +28,12 @@ struct OutputType
 	float4 position : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
+	float4 lightViewPos0 : TEXCOORD1;
+	float4 lightViewPos1 : TEXCOORD2;
+	float4 lightViewPos2 : TEXCOORD3;
+	float3 worldPosition : TEXCOORD4;
 };
+
 
 [maxvertexcount(4)]
 void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
@@ -74,10 +76,29 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 		output.position = mul(output.position, projectionMatrix);
 		//output.colour = input[0].colour;
 		output.tex = texCoords[i];
-		output.normal = mul(input[0].normal, (float3x3) worldMatrix);
+		output.normal = mul(normalize(cameraVec), (float3x3) worldMatrix);
 		output.normal = normalize(output.normal);
+
+		// Calculate the position of the vertice as viewed by the light source.
+		output.lightViewPos0 = mul(vertices[i], worldMatrix);
+		output.lightViewPos0 = mul(output.lightViewPos0, lightViewMatrix[0]);
+		output.lightViewPos0 = mul(output.lightViewPos0, lightProjectionMatrix[0]);
+
+		output.lightViewPos1 = mul(vertices[i], worldMatrix);
+		output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix[1]);
+		output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix[1]);
+
+		output.lightViewPos2 = mul(vertices[i], worldMatrix);
+		output.lightViewPos2 = mul(output.lightViewPos2, lightViewMatrix[2]);
+		output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix[2]);
+
+
+		output.worldPosition = mul(vertices[i], worldMatrix).xyz;
+
 		triStream.Append(output);
 	}
 
 	triStream.RestartStrip();
+
+
 }
