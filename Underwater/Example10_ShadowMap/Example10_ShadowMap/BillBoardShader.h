@@ -13,21 +13,24 @@ using namespace DirectX;
 class BillboardShader : public BaseShader
 {
 private:
+	//Matrix buffer with extra matrices for the Lights passed in
 	struct MatrixBufferType
 	{
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX projection;
-		XMMATRIX lightView[DIRCOUNT];
-		XMMATRIX lightProjection[DIRCOUNT];
+		XMMATRIX lightView[DIRCOUNT + POINTCOUNT];
+		XMMATRIX lightProjection[DIRCOUNT + POINTCOUNT];
 	};
 
+	//Buffer for passing the camera position
 	struct CameraBufferType
 	{
 		XMFLOAT3 camerPos;
 		float padding;
 	};
 
+	//Buffer for array of directional lights
 	struct DirLightBufferType
 	{
 		XMFLOAT4 ambient[DIRCOUNT];
@@ -35,6 +38,8 @@ private:
 		XMFLOAT4 direction[DIRCOUNT];
 		//float padding;
 	};
+
+	//Buffer for array of point lights
 	struct PointLightBufferType
 	{
 		XMFLOAT4 ambient[POINTCOUNT];
@@ -58,6 +63,7 @@ private:
 	void initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psFilename);
 
 private:
+	//Buffers to pass into shaders
 	ID3D11Buffer * matrixBuffer;
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;

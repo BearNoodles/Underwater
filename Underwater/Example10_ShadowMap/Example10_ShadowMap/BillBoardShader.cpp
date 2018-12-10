@@ -4,13 +4,14 @@
 
 BillboardShader::BillboardShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
+	//Load required shader files
 	initShader(L"fiShader_vs.cso", L"fiShader_gs.cso", L"fiShader_ps.cso");
 }
 
 
 BillboardShader::~BillboardShader()
 {
-	// Release the sampler state.
+	// Release the sampler states.
 	if (sampleState)
 	{
 		sampleState->Release();
@@ -35,6 +36,8 @@ BillboardShader::~BillboardShader()
 		layout->Release();
 		layout = 0;
 	}
+
+	// Release buffers.
 	if (cameraBuffer)
 	{
 		cameraBuffer->Release();
@@ -79,7 +82,7 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
 
-	// Setup light buffer
+	// Setup directional light buffer
 	dLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	dLightBufferDesc.ByteWidth = sizeof(DirLightBufferType);
 	dLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -88,13 +91,15 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	dLightBufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&dLightBufferDesc, NULL, &dLightBuffer);
 
-	// Setup light buffer
+	// Setup point light buffer
 	pLightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	pLightBufferDesc.ByteWidth = sizeof(PointLightBufferType);
 	pLightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	pLightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	pLightBufferDesc.MiscFlags = 0;
 	pLightBufferDesc.StructureByteStride = 0;
+
+	//Create the point light buffer
 	renderer->CreateBuffer(&pLightBufferDesc, NULL, &pLightBuffer);
 
 	// Create a texture sampler state description.
@@ -124,6 +129,8 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDesc.BorderColor[1] = 1.0f;
 	samplerDesc.BorderColor[2] = 1.0f;
 	samplerDesc.BorderColor[3] = 1.0f;
+
+	//Create the shadow sampler state
 	renderer->CreateSamplerState(&samplerDesc, &sampleStateShadow);
 
 	// Setup camera buffer
@@ -133,6 +140,8 @@ void BillboardShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cameraBufferDesc.MiscFlags = 0;
 	cameraBufferDesc.StructureByteStride = 0;
+
+	//Create the camera buffer
 	renderer->CreateBuffer(&cameraBufferDesc, NULL, &cameraBuffer);
 
 }
@@ -166,6 +175,7 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	XMMATRIX tLightViewMatrix2 = XMMatrixTranspose(pLights[0].getViewMatrix());
 	XMMATRIX tLightProjectionMatrix2 = XMMatrixTranspose(pLights[0].getOrthoMatrix());
 
+	//Send matrix data to the geometry shader
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 	dataPtr->world = tworld;// worldMatrix;
@@ -174,6 +184,7 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->GSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	//Send camera position to the geometry shader
 	deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	camPtr = (CameraBufferType*)mappedResource.pData;
 	camPtr->camerPos = camPos;
@@ -182,7 +193,6 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	deviceContext->GSSetConstantBuffers(1, 1, &cameraBuffer);
 
 
-	// Additional
 	// Send light data to pixel shader
 	deviceContext->Map(dLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	dLightPtr = (DirLightBufferType*)mappedResource.pData;
@@ -196,10 +206,9 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	dLightPtr->ambient[1] = dLights[1].getAmbientColour();
 	dLightPtr->diffuse[1] = dLights[1].getDiffuseColour();
 	dLightPtr->direction[1] = { dLights[1].getDirection().x, dLights[1].getDirection().y, dLights[1].getDirection().z, 0 };
-	//dlightPtr->padding[1] = 0;
+
 	deviceContext->Unmap(dLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &dLightBuffer);
-
 
 	//point light
 	deviceContext->Map(pLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -213,8 +222,7 @@ void BillboardShader::setShaderParameters(ID3D11DeviceContext* deviceContext, co
 	deviceContext->Unmap(pLightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(1, 1, &pLightBuffer);
 
-	// Set shader texture resource in the pixel shader.
-	// Set shader texture resource in the pixel shader.
+	// Set shader texture resources in the pixel shader and set samplers
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &depthMap);
 	deviceContext->PSSetShaderResources(2, 1, &depthMap2);
