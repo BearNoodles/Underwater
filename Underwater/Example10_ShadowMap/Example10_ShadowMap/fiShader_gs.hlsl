@@ -61,7 +61,10 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 	texCoords[0] = float2(1.0f, 0.0f);
 	texCoords[1] = float2(0.0f, 0.0f);
 	texCoords[2] = float2(1.0f, 1.0f);
-	texCoords[3] = float2(.0f, 1.0f);
+	texCoords[3] = float2(0.0f, 1.0f);
+
+	//Normal is always facing the player in the xz plane but never points up or down
+	float3 normal = float3(cameraVec.x, 0, cameraVec.z);
 
 
 	for (int i = 0; i < 4; i++)
@@ -72,7 +75,7 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 		output.position = mul(output.position, projectionMatrix);
 
 		output.tex = texCoords[i];
-		output.normal = mul(normalize(cameraVec), (float3x3) worldMatrix);
+		output.normal = mul(normalize(normal), (float3x3) worldMatrix);
 		output.normal = normalize(output.normal);
 
 		// Calculate the position of the vertice as viewed by the light source.

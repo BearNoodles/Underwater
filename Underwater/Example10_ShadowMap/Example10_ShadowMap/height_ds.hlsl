@@ -104,7 +104,7 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 
 	float2 movingNormal;
 	movingNormal.x = texPos.x + (time * speed / 100);
-	movingNormal.y = texPos.y;// +(time * speed / 100);
+	movingNormal.y = texPos.y;
 
 	float4 normalColour;
 	normalColour = texture2.SampleLevel(sampler1, movingNormal, 0);

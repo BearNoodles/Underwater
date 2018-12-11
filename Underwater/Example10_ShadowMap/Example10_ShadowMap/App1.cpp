@@ -26,7 +26,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	textureMgr->loadTexture("waveHeight", L"res/waveHeight.png");
 	textureMgr->loadTexture("terrainNormal", L"res/terrainNormal.png");
 	textureMgr->loadTexture("waveNormal", L"res/waveNormal.png");
-	textureMgr->loadTexture("water", L"res/blue2.png");
+	textureMgr->loadTexture("water", L"res/blue.png");
 	textureMgr->loadTexture("fish", L"res/jelly.png");
 
 

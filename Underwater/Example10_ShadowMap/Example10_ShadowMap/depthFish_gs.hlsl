@@ -18,7 +18,6 @@ cbuffer CameraBuffer : register(b1)
 struct InputType
 {
 	float4 position : POSITION;
-	float2 tex : TEXCOORD0;
 };
 
 struct OutputType
