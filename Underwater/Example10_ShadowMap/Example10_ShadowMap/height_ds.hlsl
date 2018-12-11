@@ -109,7 +109,6 @@ OutputType main(ConstantOutputType input, float2 uvwCoord : SV_DomainLocation, c
 	float4 normalColour;
 	normalColour = texture2.SampleLevel(sampler1, movingNormal, 0);
 
-
 	//Calculate normals from height map colour
 	output.normal.x = -lerp(-1.0f, 1.0f, normalColour.x);
 	output.normal.y = lerp(-1.0f, 1.0f, normalColour.z);
